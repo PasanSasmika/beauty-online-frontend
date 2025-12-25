@@ -1,7 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
 /* Custom theme tokens (optional, later) */
 @theme {
   --color-primary: #E11D48; /* rose-600 */
   --color-secondary: #F5F3FF;
+}
+body {
+  font-family: 'Poppins', sans-serif; /* Primary font */
+}
+
+/* Optional: create a custom class for the second font */
+.font-playfair {
+  font-family: 'Playfair Display', serif;
 }

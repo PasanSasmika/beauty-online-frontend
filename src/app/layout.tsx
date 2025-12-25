@@ -1,24 +1,40 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import ClientProviders from '@/components/ClientProviders'
+'use client'; // Needed because we are using useEffect
 
-export const metadata: Metadata = {
-  title: 'Beauty Online',
-  description: 'Luxury cosmetic & beauty products online',
-}
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { useEffect } from "react";
+import { initSmoothScroll } from "@/lib/smooth-scroll";
+import CustomCursor from "@/components/ui/CustomCursor";
+import Header from "@/components/layout/Header";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  
+  useEffect(() => {
+    initSmoothScroll();
+  }, []);
+
   return (
     <html lang="en">
-      <body>
-        <ClientProviders>
-          {children}
-        </ClientProviders>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Header />
+        <CustomCursor />
+        
+        {children}
       </body>
     </html>
-  )
+  );
 }
