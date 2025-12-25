@@ -15,3 +15,14 @@ body {
 .font-playfair {
   font-family: 'Playfair Display', serif;
 }
+
+@layer utilities {
+  .animate-gradient-slow {
+    animation: gradientMove 8s linear infinite;
+  }
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}

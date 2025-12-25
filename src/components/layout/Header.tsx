@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const navLinks = [
   { title: "Home", href: "/" },
@@ -18,13 +19,24 @@ export default function Header() {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-colors duration-300 ${isOpen ? 'bg-[#D6CFC4]' : 'bg-[#FAF9F6]'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-colors duration-300 ${isOpen ? 'bg-[#8B9B86]' : 'bg-[#FAF9F6]'}`}>
         
-        <Link href="/" className="flex items-center gap-2 z-50">
-          <span className="text-stone-800 text-xl font-bold tracking-tight flex items-center gap-2">
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-600"><path d="M12 7.5a4.5 4.5 0 1 1 4.5 4.5M12 7.5A4.5 4.5 0 1 0 7.5 12M12 7.5V9m-4.5 3a4.5 4.5 0 1 0 4.5 4.5M7.5 12H9m3 4.5V15m4.5-3a4.5 4.5 0 1 1-4.5-4.5M12 12v1.5"/></svg>
-             Beauty Online
-          </span>
+        <Link href="/" className="flex items-center gap-3 z-50">
+           {/* 1. Image Container (Defines size) */}
+           <div className="relative w-12 h-12">
+             <Image
+               src="/logo.png"
+               alt="Beauty Online Logo"
+               fill // 'fill' allows it to adapt to the container above
+               className="object-contain" // Keeps logo aspect ratio correct
+               priority
+             />
+           </div>
+           
+           {/* 2. Text separate from image */}
+           <span className="text-stone-800 text-xl font-bold tracking-tight">
+              Beauty Online
+           </span>
         </Link>
 
         {/* Right Side Actions */}
@@ -71,7 +83,7 @@ export default function Header() {
             animate={{ y: 0 }}
             exit={{ y: "-100%" }}
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-40 bg-[#D6CFC4] pt-24 px-6 md:px-20 pb-10 flex flex-col justify-between"
+            className="fixed inset-0 z-40 bg-[#8B9B86] pt-24 px-6 md:px-20 pb-10 flex flex-col justify-between"
           >
             {/* Menu Content Container */}
             <div className="h-full flex flex-col md:flex-row md:items-end justify-between pb-10">
@@ -103,9 +115,9 @@ export default function Header() {
                 transition={{ delay: 0.6 }}
                 className="hidden md:block text-right space-y-2 text-[#2D241E]"
               >
-                <p className="text-lg opacity-70">Sanctuary of Serenity</p>
-                <p className="text-2xl font-medium">+1 (555) 000-0000</p>
-                <p className="text-2xl font-medium">hello@lotusw.co</p>
+                <p className="text-lg opacity-70">Contact Us</p>
+                <p className="text-2xl font-medium">+94 71 806 0000</p>
+                <p className="text-2xl font-medium">beautyonline.lk@gmail.com</p>
               </motion.div>
             </div>
 
@@ -118,8 +130,8 @@ export default function Header() {
             />
             
             <div className="md:hidden mt-6 text-[#2D241E] space-y-1">
-               <p className="font-medium">hello@lotusw.co</p>
-               <p className="opacity-60">+1 (555) 000-0000</p>
+               <p className="font-medium">beautyonline.lk@gmail.com</p>
+               <p className="opacity-60">+94 71 806 0000</p>
             </div>
 
           </motion.div>
