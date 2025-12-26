@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { initSmoothScroll } from "@/lib/smooth-scroll";
 import CustomCursor from "@/components/ui/CustomCursor";
 import Header from "@/components/layout/Header";
+import Preloader from "@/components/ui/Prloader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <Preloader/>
         <Header />
         <CustomCursor />
         

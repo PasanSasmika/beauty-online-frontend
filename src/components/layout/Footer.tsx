@@ -107,7 +107,7 @@ export default function Footer() {
       rel="noopener noreferrer" 
       className="text-[#2D241E] font-bold hover:underline"
     >
-      Vogue Software Solutions
+      Vogue Software Solutions (Pvt) Ltd
     </a>
   </p>
   <p className="text-xs text-stone-400 mt-1">© 2025. All rights reserved.</p>

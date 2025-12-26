@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, UserCircle } from 'lucide-react'; // Removed ArrowRight (now in forms)
 import Link from 'next/link';
 import Image from 'next/image';
+
+// Import the new separate files
+import LoginForm from '@/components/auth/LoginForm';
+import SignupForm from '@/components/auth/SignupForm';
 
 const navLinks = [
   { title: "Home", href: "/" },
@@ -13,83 +17,90 @@ const navLinks = [
 ];
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  
+  // New State: Which form to show? 'login' or 'signup'
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+    if (isLoginOpen) setIsLoginOpen(false);
+  };
+
+  const toggleLogin = () => {
+    setIsLoginOpen(!isLoginOpen);
+    if (isMenuOpen) setIsMenuOpen(false);
+    // Optional: Reset to login mode every time they close/open the modal
+    if (!isLoginOpen) setAuthMode('login'); 
+  };
+
+  const headerBgClass = isMenuOpen || isLoginOpen ? 'bg-[#8B9B86]' : 'bg-[#FAF9F6]';
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-colors duration-300 ${isOpen ? 'bg-[#8B9B86]' : 'bg-[#FAF9F6]'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-colors duration-300 ${headerBgClass}`}>
         
+        {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 z-50">
-           {/* 1. Image Container (Defines size) */}
            <div className="relative w-12 h-12">
              <Image
                src="/logo.png"
                alt="Beauty Online Logo"
-               fill // 'fill' allows it to adapt to the container above
-               className="object-contain" // Keeps logo aspect ratio correct
+               fill 
+               className="object-contain" 
                priority
              />
            </div>
-           
-           {/* 2. Text separate from image */}
            <span className="text-stone-800 text-xl font-bold tracking-tight">
               Beauty Online
            </span>
         </Link>
 
-        {/* Right Side Actions */}
-        <div className="flex items-center gap-6 z-50">
+        {/* RIGHT SIDE ACTIONS */}
+        <div className="flex items-center gap-4 md:gap-6 z-50">
           <button className="hidden md:block bg-[#2D241E] text-[#FAF9F6] px-6 py-2 rounded-full font-medium hover:bg-stone-800 transition-colors">
             Order Now
           </button>
 
-          {/* Menu Trigger */}
+          {/* USER BUTTON */}
           <button 
-            onClick={toggleMenu} 
-            className="flex items-center gap-2 text-[#2D241E] focus:outline-none group"
+            onClick={toggleLogin}
+            className="text-[#2D241E] hover:text-[#8B9B86] transition-colors focus:outline-none"
           >
-            {/* Animated Icon Swap */}
+             {isLoginOpen ? <X size={28} strokeWidth={1.5} /> : <UserCircle size={28} strokeWidth={1.5} />}
+          </button>
+
+          {/* MENU BUTTON */}
+          <button onClick={toggleMenu} className="flex items-center gap-2 text-[#2D241E] focus:outline-none group">
             <div className="relative w-6 h-6">
-              <motion.div
-                initial={false}
-                animate={{ opacity: isOpen ? 0 : 1, rotate: isOpen ? 90 : 0 }}
-                className="absolute inset-0"
-              >
+              <motion.div initial={false} animate={{ opacity: isMenuOpen ? 0 : 1, rotate: isMenuOpen ? 90 : 0 }} className="absolute inset-0">
                 <Menu size={28} strokeWidth={1.5} />
               </motion.div>
-              <motion.div
-                initial={false}
-                animate={{ opacity: isOpen ? 1 : 0, rotate: isOpen ? 0 : -90 }}
-                className="absolute inset-0"
-              >
+              <motion.div initial={false} animate={{ opacity: isMenuOpen ? 1 : 0, rotate: isMenuOpen ? 0 : -90 }} className="absolute inset-0">
                 <X size={28} strokeWidth={1.5} />
               </motion.div>
             </div>
-            
-            <span className="text-2xl font-bold uppercase tracking-wide hidden sm:block">
-              Menu
-            </span>
+            <span className="text-2xl font-bold uppercase tracking-wide hidden sm:block">Menu</span>
           </button>
         </div>
       </header>
 
-      {/* --- FULL SCREEN MENU OVERLAY --- */}
+      {/* --- MENU OVERLAY (Same as before) --- */}
       <AnimatePresence>
-        {isOpen && (
+        {isMenuOpen && (
           <motion.div
+            key="menu-overlay"
             initial={{ y: "-100%" }}
             animate={{ y: 0 }}
             exit={{ y: "-100%" }}
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
             className="fixed inset-0 z-40 bg-[#8B9B86] pt-24 px-6 md:px-20 pb-10 flex flex-col justify-between"
           >
-            {/* Menu Content Container */}
-            <div className="h-full flex flex-col md:flex-row md:items-end justify-between pb-10">
-              
-              {/* Left Side: Navigation Links */}
-              <nav className="flex flex-col gap-4 mt-10 md:mt-0">
+             {/* Menu content code here... */}
+             <div className="h-full flex flex-col md:flex-row md:items-end justify-between pb-10">
+                {/* ... existing navLinks map ... */}
+                <nav className="flex flex-col gap-4 mt-10 md:mt-0">
                 {navLinks.map((link, index) => (
                   <motion.div
                     key={index}
@@ -99,7 +110,7 @@ export default function Header() {
                   >
                     <Link 
                       href={link.href} 
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => setIsMenuOpen(false)}
                       className="text-5xl md:text-7xl font-medium text-[#2D241E] hover:text-white transition-colors block"
                     >
                       {link.title}
@@ -107,7 +118,6 @@ export default function Header() {
                   </motion.div>
                 ))}
               </nav>
-
               {/* Right Side: Contact Info (Desktop) */}
               <motion.div 
                 initial={{ opacity: 0 }}
@@ -134,6 +144,28 @@ export default function Header() {
                <p className="opacity-60">+94 71 806 0000</p>
             </div>
 
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+      {/* --- AUTH OVERLAY (Login / Signup) --- */}
+      <AnimatePresence>
+        {isLoginOpen && (
+          <motion.div
+            key="auth-overlay"
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
+            transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+            className="fixed inset-0 z-40 bg-[#8B9B86] flex items-center justify-center px-6"
+          >
+             {/* Switch between Forms based on state */}
+             {authMode === 'login' ? (
+                <LoginForm onSwitch={() => setAuthMode('signup')} />
+             ) : (
+                <SignupForm onSwitch={() => setAuthMode('login')} />
+             )}
           </motion.div>
         )}
       </AnimatePresence>
