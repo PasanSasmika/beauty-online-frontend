@@ -36,7 +36,14 @@ export default function Header() {
   };
 
   const headerBgClass = isMenuOpen || isLoginOpen ? 'bg-[#8B9B86]' : 'bg-[#FAF9F6]';
-
+{authMode === 'login' ? (
+   <LoginForm 
+      onSwitch={() => setAuthMode('signup')} 
+      onClose={() => setIsLoginOpen(false)} // <--- Add this line
+   />
+) : (
+   <SignupForm onSwitch={() => setAuthMode('login')} />
+)}
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-colors duration-300 ${headerBgClass}`}>
