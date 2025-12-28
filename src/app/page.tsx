@@ -11,7 +11,7 @@ import Footer from "@/components/layout/Footer";
 export default function Home() {
   const { scrollYProgress } = useScroll();
   
-  // Smooth out the progress bar animation
+  
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,

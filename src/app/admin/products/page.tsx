@@ -4,14 +4,15 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Pencil, Trash2, Plus, Loader2, AlertCircle } from 'lucide-react';
 
-// Define the shape of our Product data
+// Updated Interface to match new DB response
 interface Product {
   id: number;
   name: string;
   brand: string;
-  price: number;
   category: string;
-  quantity: number;
+  images: string;
+  // Variants come as a JSON array from the DB aggregation
+  variants: any; 
 }
 
 export default function AdminProductsPage() {
@@ -40,7 +41,7 @@ export default function AdminProductsPage() {
 
   // 2. Delete Product Logic
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this product? This cannot be undone.')) return;
+    if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
       const token = localStorage.getItem('token');
@@ -52,11 +53,10 @@ export default function AdminProductsPage() {
       });
 
       if (res.ok) {
-        // Success: Remove from screen immediately
         setProducts(prev => prev.filter(p => p.id !== id));
         alert('Product deleted successfully');
       } else {
-        alert('Failed to delete. You might not be an admin.');
+        alert('Failed to delete.');
       }
     } catch (error) {
       console.error(error);
@@ -86,7 +86,7 @@ export default function AdminProductsPage() {
                     <th className="p-4 font-semibold text-stone-600">Product</th>
                     <th className="p-4 font-semibold text-stone-600">Category</th>
                     <th className="p-4 font-semibold text-stone-600">Price (LKR)</th>
-                    <th className="p-4 font-semibold text-stone-600">Stock</th>
+                    <th className="p-4 font-semibold text-stone-600">Total Stock</th>
                     <th className="p-4 font-semibold text-stone-600 text-right">Actions</th>
                 </tr>
             </thead>
@@ -97,24 +97,45 @@ export default function AdminProductsPage() {
                     </tr>
                 ) : (
                     products.map((product) => {
-                        // Image parsing logic
-                        
+                        // A. Image Parsing
+                        let imageSrc = '/placeholder.jpg';
+                        try {
+                            const parsed = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+                            if (Array.isArray(parsed) && parsed.length > 0) imageSrc = `http://localhost:5000${parsed[0]}`;
+                        } catch (e) {}
+
+                        // B. Variants Parsing (Price & Stock)
+                        let displayPrice = 0;
+                        let totalStock = 0;
+                        try {
+                            const vRaw = product.variants;
+                            const variants = typeof vRaw === 'string' ? JSON.parse(vRaw) : vRaw;
+                            
+                            if (Array.isArray(variants) && variants.length > 0) {
+                                displayPrice = variants[0].price; // Show first price
+                                // Sum up quantities
+                                totalStock = variants.reduce((acc: number, curr: any) => acc + (parseInt(curr.quantity) || 0), 0);
+                            }
+                        } catch(e) {}
 
                         return (
                             <tr key={product.id} className="border-b border-stone-100 hover:bg-stone-50/50 transition-colors">
                                 <td className="p-4 flex items-center gap-3">
-                                    {/* Thumbnail */}
-                                   
+                                    <div className="w-12 h-12 rounded-lg bg-stone-200 overflow-hidden shrink-0">
+                                        <img src={imageSrc} alt={product.name} className="w-full h-full object-cover" />
+                                    </div>
                                     <div>
                                         <p className="font-medium text-[#2D241E]">{product.name}</p>
                                         <p className="text-xs text-stone-500">{product.brand}</p>
                                     </div>
                                 </td>
                                 <td className="p-4 text-stone-600 capitalize">{product.category}</td>
-                                <td className="p-4 font-medium">{product.price}</td>
+                                <td className="p-4 font-medium">
+                                    {displayPrice > 0 ? displayPrice.toLocaleString() : 'N/A'}
+                                </td>
                                 <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${product.quantity > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${totalStock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {totalStock > 0 ? `${totalStock} in stock` : 'Out of Stock'}
                                     </span>
                                 </td>
                                 <td className="p-4 text-right">

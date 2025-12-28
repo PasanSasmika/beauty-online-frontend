@@ -40,14 +40,14 @@ export default function WhyChooseUs() {
           className="object-cover"
           priority
         />
-        {/* Gradient Overlay for Readability */}
+        
         <div className="absolute inset-0 bg-gradient-to-r from-[#2D241E]/90 to-[#2D241E]/40" />
       </div>
 
       <div className="container relative z-10 mx-auto px-6 md:px-20">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           
-          {/* --- LEFT SIDE: Main Text --- */}
+          
           <div className="text-white space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -88,12 +88,12 @@ export default function WhyChooseUs() {
                 className="bg-white/10 backdrop-blur-md border border-white/20 p-6 md:p-8 rounded-2xl shadow-xl hover:bg-white/15 transition-all"
               >
                 <div className="flex items-start gap-6">
-                  {/* Icon Container */}
+                  
                   <div className="p-3 bg-[#FAF9F6] rounded-full text-[#2D241E] shrink-0">
                     <feature.icon size={24} strokeWidth={1.5} />
                   </div>
                   
-                  {/* Text Content */}
+                  
                   <div>
                     <h3 className="text-xl  text-white mb-2">
                       {feature.title}

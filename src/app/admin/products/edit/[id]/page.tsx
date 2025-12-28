@@ -2,84 +2,139 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { Loader2 } from 'lucide-react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { Loader2, Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+
+// Data Interfaces
+interface Variant {
+  size: string;
+  price: number;
+  quantity: number;
+  original_price: number;
+}
+
+interface ProductFormData {
+  name: string;
+  brand: string;
+  category: string;
+  country: string;
+  description: string;
+  is_koko_enabled: boolean;
+  variants: Variant[];
+}
 
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id; 
+  const id = params.id as string;
   
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Setup Form
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  // 1. Setup Form
+  const { 
+    register, 
+    control, 
+    handleSubmit, 
+    reset, 
+    formState: { errors } 
+  } = useForm<ProductFormData>({
+    defaultValues: {
+      name: '',
+      brand: '',
+      variants: []
+    }
+  });
 
-  // 1. Fetch Existing Data
+  const { fields, append, remove, replace } = useFieldArray({
+    control,
+    name: "variants"
+  });
+
+  // 2. Fetch Data
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductData = async () => {
       try {
         const res = await fetch(`http://localhost:5000/api/products/${id}`);
         if (!res.ok) throw new Error('Product not found');
         
-        const data = await res.json();
+        const dbData = await res.json();
         
-        // Pre-fill form fields with existing data
-        setValue('name', data.name);
-        setValue('brand', data.brand);
-        setValue('category', data.category);
-        setValue('price', data.price);
-        setValue('original_price', data.original_price);
-        setValue('quantity', data.quantity);
-        setValue('size', data.size);
-        setValue('country', data.country);
-        setValue('description', data.description);
+        // --- PARSE VARIANTS LOGIC ---
+        let parsedVariants: Variant[] = [];
+        try {
+           const vRaw = dbData.variants;
+           // Handle case where DB returns string or already parsed object
+           const vJson = typeof vRaw === 'string' ? JSON.parse(vRaw) : vRaw;
+           
+           if (Array.isArray(vJson)) {
+             parsedVariants = vJson.map((v: any) => ({
+               size: v.size || '',
+               // Ensure numbers are numbers, not strings like "3000.00"
+               price: parseFloat(v.price) || 0,
+               quantity: parseInt(v.quantity) || 0,
+               original_price: v.original_price ? parseFloat(v.original_price) : 0
+             }));
+           }
+        } catch (e) {
+           console.error("Variant parse error", e);
+        }
+
+        // Filter out any bad data (like null sizes from left join)
+        parsedVariants = parsedVariants.filter(v => v.size !== null && v.size !== '');
+
+        // If empty, add one blank row so user can add data
+        if (parsedVariants.length === 0) {
+            parsedVariants.push({ size: '', price: 0, quantity: 0, original_price: 0 });
+        }
+
+        // --- UPDATE FORM ---
+        reset({
+            name: dbData.name || '',
+            brand: dbData.brand || '',
+            category: dbData.category || '',
+            country: dbData.country || '',
+            description: dbData.description || '',
+            is_koko_enabled: (dbData.is_koko_enabled === 1 || dbData.is_koko_enabled === true),
+            variants: parsedVariants // reset() sets the form data
+        });
         
-        // Convert 1/0 from MySQL to boolean
-        setValue('is_koko_enabled', data.is_koko_enabled === 1 || data.is_koko_enabled === true); 
-        
+        // FORCE UPDATE the list fields (Double insurance to make them show up)
+        replace(parsedVariants);
+
+        setIsDataLoaded(true);
+
       } catch (error) {
         console.error(error);
         alert('Error loading product');
         router.push('/admin/products');
-      } finally {
-        setFetching(false);
       }
     };
 
-    if (id) fetchProduct();
-  }, [id, router, setValue]);
+    if (id) fetchProductData();
+  }, [id, reset, replace, router]);
 
-  // 2. Submit Update (No Image Logic)
-  const onSubmit = async (data: any) => {
-    setLoading(true);
+  // 3. Submit Handler
+  const onSubmit = async (data: ProductFormData) => {
+    setIsSaving(true);
     try {
       const token = localStorage.getItem('token');
-      
-      // Use FormData to match the Backend expectation (Multipart), 
-      // but we simply won't append any files.
       const formData = new FormData();
       
       formData.append('name', data.name);
       formData.append('brand', data.brand);
       formData.append('category', data.category);
-      formData.append('price', data.price);
-      formData.append('quantity', data.quantity);
-      formData.append('size', data.size);
-      
-      if (data.original_price) formData.append('original_price', data.original_price);
       if (data.country) formData.append('country', data.country);
       if (data.description) formData.append('description', data.description);
-      
       formData.append('is_koko_enabled', data.is_koko_enabled ? 'true' : 'false');
+      
+      // Send variants as JSON string
+      formData.append('variants', JSON.stringify(data.variants));
 
-      // Send PUT Request
       const res = await fetch(`http://localhost:5000/api/products/${id}`, {
         method: 'PUT',
-        headers: { 
-            'Authorization': `Bearer ${token}` 
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
       });
 
@@ -92,125 +147,142 @@ export default function EditProductPage() {
       console.error(error);
       alert('Error updating product');
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
-  if (fetching) return <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-[#2D241E]" /></div>;
+  if (!isDataLoaded) {
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50">
+            <Loader2 className="animate-spin text-[#2D241E] w-10 h-10 mb-4" />
+            <p className="text-stone-500 font-medium">Loading product details...</p>
+        </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-serif font-bold text-[#2D241E] mb-8">Edit Product</h1>
+    <div className="max-w-5xl mx-auto pb-20">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+            <Link href="/admin/products" className="p-2 bg-white rounded-full hover:bg-stone-200 transition-colors">
+                <ArrowLeft size={20} className="text-[#2D241E]" />
+            </Link>
+            <h1 className="text-3xl font-serif font-bold text-[#2D241E]">Edit Product</h1>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         
-        {/* Row 1: Name & Brand */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Product Name</label>
-                <input 
-                  {...register("name", { required: true })} 
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                />
+        {/* DETAILS SECTION */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-6">
+            <h2 className="font-bold text-lg text-[#2D241E] border-b pb-2 mb-4">Product Information</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="block text-sm font-semibold text-stone-600 mb-2">Product Name</label>
+                    <input {...register("name", { required: true })} className="w-full p-3 border border-stone-300 rounded-lg outline-none" />
+                </div>
+                <div>
+                    <label className="block text-sm font-semibold text-stone-600 mb-2">Brand</label>
+                    <input {...register("brand", { required: true })} className="w-full p-3 border border-stone-300 rounded-lg outline-none" />
+                </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                    <label className="block text-sm font-semibold text-stone-600 mb-2">Category</label>
+                    <select {...register("category", { required: true })} className="w-full p-3 border border-stone-300 rounded-lg bg-white outline-none">
+                        <option value="skincare">Skincare</option>
+                        <option value="haircare">Haircare</option>
+                        <option value="body">Body</option>
+                        <option value="wellness">Wellness</option>
+                    </select>
+                 </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-stone-600 mb-2">Country</label>
+                    <input {...register("country")} className="w-full p-3 border border-stone-300 rounded-lg outline-none" />
+                 </div>
+            </div>
+
             <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Brand Name</label>
-                <input 
-                  {...register("brand", { required: true })} 
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                />
+                <label className="block text-sm font-semibold text-stone-600 mb-2">Description</label>
+                <textarea {...register("description")} rows={4} className="w-full p-3 border border-stone-300 rounded-lg outline-none" />
             </div>
         </div>
 
-        {/* Row 2: Pricing & Category */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Price (LKR)</label>
-                <input 
-                  type="number" 
-                  {...register("price", { required: true })} 
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Original Price</label>
-                <input 
-                  type="number" 
-                  {...register("original_price")} 
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Category</label>
-                <select 
-                  {...register("category", { required: true })} 
-                  className="w-full p-3 border rounded-lg bg-white outline-none"
-                >
-                    <option value="skincare">Skincare</option>
-                    <option value="haircare">Haircare</option>
-                    <option value="body">Body</option>
-                    <option value="wellness">Wellness</option>
-                </select>
-            </div>
-        </div>
-
-        {/* Row 3: Stock & Details */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* VARIANTS SECTION */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
+           <div className="flex justify-between items-center mb-6 border-b pb-4">
              <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Quantity</label>
-                <input 
-                  type="number" 
-                  {...register("quantity", { required: true })} 
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                />
+                <h2 className="font-bold text-lg text-[#2D241E]">Sizes & Prices</h2>
              </div>
-             <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Size (e.g. 50ml)</label>
-                <input 
-                  {...register("size", { required: true })} 
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                />
-             </div>
-             <div>
-                <label className="block text-sm font-medium mb-1 text-stone-600">Country</label>
-                <input 
-                  {...register("country")} 
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                />
-             </div>
+             <button 
+               type="button"
+               onClick={() => append({ size: '', price: 0, quantity: 0, original_price: 0 })}
+               className="flex items-center gap-2 px-4 py-2 bg-[#F5F5F4] hover:bg-[#E7E5E4] text-[#2D241E] rounded-lg text-sm font-medium transition-colors"
+             >
+               <Plus size={16} /> Add Size
+             </button>
+           </div>
+
+           <div className="space-y-3">
+             {fields.map((field, index) => (
+               <div key={field.id} className="grid grid-cols-12 gap-4 items-start p-4 bg-stone-50 border border-stone-200 rounded-xl relative group">
+                  
+                  {/* Size */}
+                  <div className="col-span-3">
+                    <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Size</label>
+                    <input {...register(`variants.${index}.size`, { required: true })} className="w-full p-2 border border-stone-300 rounded text-sm" />
+                  </div>
+
+                  {/* Price */}
+                  <div className="col-span-3">
+                    <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Price</label>
+                    <input type="number" step="0.01" {...register(`variants.${index}.price`, { required: true })} className="w-full p-2 border border-stone-300 rounded text-sm" />
+                  </div>
+
+                  {/* Original Price */}
+                  <div className="col-span-3">
+                    <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Org. Price</label>
+                    <input type="number" step="0.01" {...register(`variants.${index}.original_price`)} className="w-full p-2 border border-stone-300 rounded text-sm" />
+                  </div>
+
+                  {/* Stock */}
+                  <div className="col-span-2">
+                    <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Stock</label>
+                    <input type="number" {...register(`variants.${index}.quantity`, { required: true })} className="w-full p-2 border border-stone-300 rounded text-sm" />
+                  </div>
+
+                  {/* Delete */}
+                  <div className="col-span-1 flex justify-center pt-6">
+                    {fields.length > 1 && (
+                        <button type="button" onClick={() => remove(index)} className="text-stone-400 hover:text-red-500 transition-colors p-1">
+                           <Trash2 size={18} />
+                        </button>
+                    )}
+                  </div>
+               </div>
+             ))}
+           </div>
         </div>
 
-        {/* Description */}
-        <div>
-            <label className="block text-sm font-medium mb-1 text-stone-600">Description</label>
-            <textarea 
-              {...register("description")} 
-              rows={4} 
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-            />
+        {/* SETTINGS */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex items-center gap-4">
+             <input type="checkbox" id="koko_toggle" {...register("is_koko_enabled")} className="w-5 h-5 accent-[#2D241E] cursor-pointer" />
+             <label htmlFor="koko_toggle" className="cursor-pointer">
+                <span className="block font-bold text-[#2D241E]">Enable Koko Installments</span>
+             </label>
         </div>
 
-        {/* Koko Toggle */}
-        <div className="flex items-center gap-3">
-             <input 
-               type="checkbox" 
-               {...register("is_koko_enabled")} 
-               className="w-5 h-5 accent-[#2D241E] cursor-pointer" 
-               id="koko" 
-             />
-             <label htmlFor="koko" className="text-stone-700 font-medium cursor-pointer">Enable Koko Installments</label>
-        </div>
-
-        {/* Submit Button */}
-        <div className="pt-4 border-t border-stone-100">
-            <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full bg-[#2D241E] text-white py-4 rounded-xl font-medium hover:bg-stone-800 transition-colors flex justify-center disabled:opacity-70"
-            >
-                {loading ? <Loader2 className="animate-spin" /> : 'Save Changes'}
+        {/* SUBMIT */}
+        <div className="flex justify-end pt-4 border-t border-stone-200">
+            <button type="submit" disabled={isSaving} className="flex items-center gap-2 bg-[#2D241E] text-white px-8 py-4 rounded-xl font-bold hover:bg-stone-800 transition-all shadow-lg disabled:opacity-70">
+                {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : <><Save className="w-5 h-5" /> Save Changes</>}
             </button>
         </div>
+
       </form>
     </div>
   );

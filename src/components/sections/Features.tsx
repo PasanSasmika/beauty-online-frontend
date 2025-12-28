@@ -14,6 +14,7 @@ interface Product {
   original_price?: number;
   images: string; 
   category: string;
+  variants: any;
 }
 
 export default function Features() {
@@ -36,13 +37,11 @@ export default function Features() {
     fetchProducts();
   }, []);
 
-  // 2. Get First 8 Products
   const displayedProducts = products.slice(0, 8);
 
   return (
     <section className="py-24 px-6 md:px-20 bg-[#FAF9F6]">
       
-      {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
         <div>
           <span className="text-[#8B9B86] font-bold tracking-widest text-sm uppercase mb-2 block">
@@ -109,6 +108,22 @@ function ProductCard({ product }: { product: Product }) {
     console.error("Image logic error", e);
   }
 
+
+  let firstVariant = null;
+  let displayPrice = 0;
+  let displayOriginalPrice = 0;
+  try {
+     const v = product.variants; 
+     const variantsArray = typeof v === 'string' ? JSON.parse(v) : v;
+     
+     if (Array.isArray(variantsArray) && variantsArray.length > 0) {
+        firstVariant = variantsArray[0];
+        displayPrice = firstVariant.price;
+        displayOriginalPrice = firstVariant.original_price;
+     }
+  } catch (e) { console.error(e); }
+
+
   const discount = product.original_price 
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : 0;
@@ -141,24 +156,28 @@ function ProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="p-5">
-        <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">
-          {product.brand}
-        </p>
-        <h3 className=" text-lg text-[#2D241E] truncate group-hover:text-[#8B9B86] transition-colors">
-          {product.name}
-        </h3>
-        
-        <div className="mt-3 flex items-center gap-3">
-          <span className="font-bold text-[#2D241E]">
-            LKR {product.price.toLocaleString()}
-          </span>
-          {product.original_price && (
-            <span className="text-sm text-stone-400 line-through">
-              LKR {product.original_price.toLocaleString()}
+         <p className="text-xs text-stone-500 uppercase">{product.brand}</p>
+         <h3 className=" text-lg text-[#2D241E] truncate">{product.name}</h3>
+         
+         {/* Show Size Badge */}
+         {firstVariant && (
+            <span className="inline-block mt-1 text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-500">
+               {firstVariant.size}
             </span>
-          )}
-        </div>
-      </div>
+         )}
+
+         <div className="mt-2 flex items-center gap-3">
+           <span className="font-bold text-[#2D241E]">
+             {/* Show "From 3000" if multiple sizes exist, else just price */}
+LKR {(displayPrice || 0).toLocaleString()}
+           </span>
+           {displayOriginalPrice > 0 && (
+             <span className="text-sm text-stone-400 line-through">
+               LKR {displayOriginalPrice.toLocaleString()}
+             </span>
+           )}
+         </div>
+       </div>
     </motion.div>
   );
 }

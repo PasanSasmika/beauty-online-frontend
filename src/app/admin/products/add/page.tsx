@@ -2,77 +2,82 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form'; // Added useFieldArray
 import * as z from 'zod';
-import { Loader2, UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, UploadCloud, CheckCircle, AlertCircle, Plus, Trash2 } from 'lucide-react';
 
-// --- 1. ZOD SCHEMA ---
+// --- 1. UPDATED ZOD SCHEMA (With Variants) ---
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   brand: z.string().min(1, "Brand is required"),
   category: z.string().min(1, "Category is required"),
-  // coerce handles "100" string -> 100 number conversion automatically
-  price: z.coerce.number().min(1, "Price must be greater than 0"),
-  original_price: z.coerce.number().optional(),
-  quantity: z.coerce.number().min(0, "Quantity cannot be negative"),
-  size: z.string().min(1, "Size is required"),
   country: z.string().optional(),
   description: z.string().optional(),
   is_koko_enabled: z.boolean().default(false),
-  // We check images manually or via custom refinement
+  
+  // New: Variants Array Validation
+  variants: z.array(z.object({
+    size: z.string().min(1, "Size is required"),
+    price: z.coerce.number().min(1, "Price must be greater than 0"),
+    quantity: z.coerce.number().min(0, "Quantity cannot be negative"),
+    original_price: z.coerce.number().optional()
+  })).min(1, "At least one size variant is required"),
+
+  // Images Validation
   images: z.any()
     .refine((files) => files instanceof FileList && files.length > 0, "At least one image is required")
     .refine((files) => files instanceof FileList && files.length <= 5, "Maximum 5 images allowed"),
 });
 
-// Type for the finalized data after Zod parses it
 type ProductSchemaType = z.infer<typeof productSchema>;
 
 export default function AddProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // --- 2. SETUP REACT HOOK FORM (No Resolver) ---
+  // --- 2. SETUP FORM ---
   const {
     register,
+    control, // Needed for useFieldArray
     handleSubmit,
     watch,
-    setError, // We need this to manually set errors
+    setError,
     clearErrors,
     formState: { errors },
   } = useForm<ProductSchemaType>({
-    // resolver line is REMOVED as requested
     defaultValues: {
       is_koko_enabled: false,
-      quantity: 100,
+      // Default with one empty variant row
+      variants: [{ size: '', price: 0, quantity: 100 }]
     },
   });
 
-  // Watch for preview logic
-  const watchedPrice = watch("price");
-  const isKokoEnabled = watch("is_koko_enabled");
+  // --- 3. FIELD ARRAY SETUP (Dynamic Rows) ---
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "variants"
+  });
+
   const selectedImages = watch("images");
 
-  // --- 3. MANUAL SUBMIT HANDLER ---
+  // --- 4. MANUAL SUBMIT HANDLER ---
   const onSubmit = async (rawData: ProductSchemaType) => {
     setLoading(true);
-    clearErrors(); // Clear previous errors
+    clearErrors();
 
     // A. MANUAL ZOD VALIDATION
     const result = productSchema.safeParse(rawData);
 
     if (!result.success) {
-      // If validation fails, loop through Zod errors and set them in RHF
       result.error.issues.forEach((issue) => {
-        // Path[0] is the field name (e.g., "price", "images")
-        const fieldName = issue.path[0] as keyof ProductSchemaType;
+        // Handle nested errors (e.g., variants.0.price)
+        const fieldName = issue.path.join('.') as any;
         setError(fieldName, { message: issue.message });
       });
       setLoading(false);
-      return; // Stop here
+      return; 
     }
 
-    // If validation passes, use the clean data from Zod
     const data = result.data;
 
     try {
@@ -84,21 +89,15 @@ export default function AddProductPage() {
       formData.append('name', data.name);
       formData.append('brand', data.brand);
       formData.append('category', data.category);
-      formData.append('price', data.price.toString());
-      
-      if (data.original_price) formData.append('original_price', data.original_price.toString());
-      
-      formData.append('quantity', data.quantity.toString());
-      formData.append('size', data.size);
-      
-      if (data.country) formData.append('country', data.country || "");
+      if (data.country) formData.append('country', data.country);
       if (data.description) formData.append('description', data.description || "");
-      
       formData.append('is_koko_enabled', data.is_koko_enabled ? 'true' : 'false');
+
+      // *** IMPORTANT: Serialize Variants to JSON string ***
+      formData.append('variants', JSON.stringify(data.variants));
 
       // Append Images
       if (data.images && data.images.length > 0) {
-        // Zod confirmed this is a FileList
         Array.from(data.images as unknown as FileList).forEach((file) => {
           formData.append('images', file);
         });
@@ -129,148 +128,159 @@ export default function AddProductPage() {
     }
   };
 
-  const kokoInstallment = watchedPrice ? (watchedPrice / 3).toFixed(2) : '0.00';
-
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-20">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-serif font-bold text-[#2D241E]">Add New Product</h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         
         {/* 1. BASIC INFO */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600">Product Name</label>
-            <input 
-              {...register("name")} 
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-              placeholder="e.g. Aloe Vera Gel" 
-            />
-            {errors.name && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12}/> {errors.name.message}</p>}
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-6">
+          <h2 className="font-bold text-lg text-[#2D241E] border-b pb-2 mb-4">Basic Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-stone-600">Product Name</label>
+              <input 
+                {...register("name")} 
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
+                placeholder="e.g. Aloe Vera Gel" 
+              />
+              {errors.name && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12}/> {errors.name.message}</p>}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-stone-600">Brand Name</label>
+              <input 
+                {...register("brand")} 
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
+                placeholder="e.g. LotusW" 
+              />
+              {errors.brand && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12}/> {errors.brand.message}</p>}
+            </div>
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600">Brand Name</label>
-            <input 
-              {...register("brand")} 
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-              placeholder="e.g. LotusW" 
-            />
-            {errors.brand && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12}/> {errors.brand.message}</p>}
-          </div>
-        </div>
 
-        {/* 2. PRICING & KOKO */}
-        <div className="p-6 bg-stone-50 rounded-xl border border-stone-100">
-          <h3 className="font-serif font-bold text-[#2D241E] mb-4">Pricing Strategy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-600">Selling Price (LKR)</label>
-              <input 
-                type="number" 
-                {...register("price")} 
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                placeholder="3000" 
-              />
-              {errors.price && <p className="text-red-500 text-xs">{errors.price.message}</p>}
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-600">Original Price (Optional)</label>
-              <input 
-                type="number" 
-                {...register("original_price")} 
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#8B9B86] outline-none" 
-                placeholder="4500" 
-              />
-            </div>
-            
-            {/* KOKO TOGGLE */}
-            <div className="flex flex-col justify-end">
-              <label className="flex items-center gap-3 p-3 bg-white border rounded-lg cursor-pointer hover:border-[#8B9B86] transition-colors">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div className="space-y-2">
+                <label className="text-sm font-medium text-stone-600">Category</label>
+                <select 
+                  {...register("category")} 
+                  className="w-full p-3 border rounded-lg bg-white outline-none"
+                >
+                  <option value="">Select...</option>
+                  <option value="skincare">Skincare</option>
+                  <option value="haircare">Haircare</option>
+                  <option value="body">Body</option>
+                  <option value="wellness">Wellness</option>
+                </select>
+                {errors.category && <p className="text-red-500 text-xs">{errors.category.message}</p>}
+             </div>
+
+             <div className="space-y-2">
+                <label className="text-sm font-medium text-stone-600">Country (Optional)</label>
                 <input 
-                  type="checkbox" 
-                  {...register("is_koko_enabled")} 
-                  className="w-5 h-5 accent-[#2D241E]" 
+                  {...register("country")} 
+                  className="w-full p-3 border rounded-lg outline-none" 
+                  placeholder="Sri Lanka" 
                 />
-                <span className="font-medium text-[#2D241E]">Koko Available?</span>
-              </label>
-            </div>
+             </div>
           </div>
 
-          {/* KOKO PREVIEW */}
-          {isKokoEnabled && watchedPrice > 0 && (
-            <div className="mt-4 flex items-center gap-2 text-sm text-[#2D241E] bg-[#EBE5D9] p-3 rounded-lg inline-block">
-               <span className="font-bold">Koko Installment:</span> 
-               <span>LKR {kokoInstallment} x 3 months</span>
-            </div>
-          )}
-        </div>
-
-        {/* 3. DETAILS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600">Category</label>
-            <select 
-              {...register("category")} 
-              className="w-full p-3 border rounded-lg bg-white outline-none"
-            >
-              <option value="">Select...</option>
-              <option value="skincare">Skincare</option>
-              <option value="haircare">Haircare</option>
-              <option value="body">Body</option>
-              <option value="wellness">Wellness</option>
-            </select>
-            {errors.category && <p className="text-red-500 text-xs">{errors.category.message}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600">Quantity</label>
-            <input 
-              type="number" 
-              {...register("quantity")} 
+            <label className="text-sm font-medium text-stone-600">Description</label>
+            <textarea 
+              {...register("description")} 
+              rows={3} 
               className="w-full p-3 border rounded-lg outline-none" 
-              placeholder="100" 
-            />
-            {errors.quantity && <p className="text-red-500 text-xs">{errors.quantity.message}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600">Size/Volume</label>
-            <input 
-              {...register("size")} 
-              className="w-full p-3 border rounded-lg outline-none" 
-              placeholder="50ml" 
-            />
-            {errors.size && <p className="text-red-500 text-xs">{errors.size.message}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600">Country (Optional)</label>
-            <input 
-              {...register("country")} 
-              className="w-full p-3 border rounded-lg outline-none" 
-              placeholder="Sri Lanka" 
+              placeholder="Product details..." 
             />
           </div>
         </div>
 
-        {/* 4. DESCRIPTION */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-stone-600">Description</label>
-          <textarea 
-            {...register("description")} 
-            rows={4} 
-            className="w-full p-3 border rounded-lg outline-none" 
-            placeholder="Product details..." 
-          />
+        {/* 2. VARIANTS (SIZES & PRICES) */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
+           <div className="flex justify-between items-center mb-6 border-b pb-2">
+             <h2 className="font-bold text-lg text-[#2D241E]">Sizes & Prices</h2>
+             <button 
+               type="button"
+               onClick={() => append({ size: '', price: 0, quantity: 100, original_price: undefined })}
+               className="text-sm flex items-center gap-1 text-[#8B9B86] hover:text-[#2D241E] transition-colors font-medium"
+             >
+               <Plus size={16} /> Add Another Size
+             </button>
+           </div>
+
+           <div className="space-y-4">
+             {fields.map((field, index) => (
+               <div key={field.id} className="flex flex-col md:flex-row gap-4 items-start p-4 bg-stone-50 rounded-xl border border-stone-100 relative group">
+                  
+                  {/* Size */}
+                  <div className="flex-1 w-full">
+                    <label className="text-xs font-semibold text-stone-500 mb-1 block">Size</label>
+                    <input 
+                      {...register(`variants.${index}.size` as const)} 
+                      placeholder="e.g. 50ml" 
+                      className="w-full p-2 border rounded bg-white" 
+                    />
+                    {errors.variants?.[index]?.size && <p className="text-red-500 text-[10px] mt-1">{errors.variants[index]?.size?.message}</p>}
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex-1 w-full">
+                    <label className="text-xs font-semibold text-stone-500 mb-1 block">Price (LKR)</label>
+                    <input 
+                      type="number"
+                      {...register(`variants.${index}.price` as const)} 
+                      placeholder="3000" 
+                      className="w-full p-2 border rounded bg-white" 
+                    />
+                    {errors.variants?.[index]?.price && <p className="text-red-500 text-[10px] mt-1">{errors.variants[index]?.price?.message}</p>}
+                  </div>
+
+                  {/* Original Price */}
+                  <div className="flex-1 w-full">
+                    <label className="text-xs font-semibold text-stone-500 mb-1 block">Org. Price (Opt)</label>
+                    <input 
+                      type="number"
+                      {...register(`variants.${index}.original_price` as const)} 
+                      placeholder="4500" 
+                      className="w-full p-2 border rounded bg-white" 
+                    />
+                  </div>
+
+                  {/* Quantity */}
+                  <div className="flex-1 w-full">
+                    <label className="text-xs font-semibold text-stone-500 mb-1 block">Stock</label>
+                    <input 
+                      type="number"
+                      {...register(`variants.${index}.quantity` as const)} 
+                      placeholder="100" 
+                      className="w-full p-2 border rounded bg-white" 
+                    />
+                     {errors.variants?.[index]?.quantity && <p className="text-red-500 text-[10px] mt-1">{errors.variants[index]?.quantity?.message}</p>}
+                  </div>
+
+                  {/* Remove Button */}
+                  {fields.length > 1 && (
+                    <button 
+                      type="button" 
+                      onClick={() => remove(index)} 
+                      className="mt-6 p-2 text-stone-400 hover:text-red-500 transition-colors"
+                      title="Remove variant"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+               </div>
+             ))}
+           </div>
         </div>
 
-        {/* 5. IMAGE UPLOAD */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-stone-600">Product Images</label>
+        {/* 3. IMAGES & KOKO */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-6">
+          <h2 className="font-bold text-lg text-[#2D241E] border-b pb-2">Media & Settings</h2>
+          
           <div className={`border-2 border-dashed rounded-xl p-8 text-center hover:bg-stone-50 transition-colors ${errors.images ? 'border-red-300 bg-red-50' : 'border-stone-300'}`}>
             <input 
               type="file" 
@@ -289,18 +299,28 @@ export default function AddProductPage() {
             </label>
           </div>
           
-          {/* File Preview Count */}
           {selectedImages && (selectedImages as unknown as FileList).length > 0 && (
-             <p className="text-sm text-green-600 flex items-center gap-1 mt-2">
+             <p className="text-sm text-green-600 flex items-center gap-1">
                <CheckCircle size={14} /> {(selectedImages as unknown as FileList).length} files selected
              </p>
           )}
-          {/* File Error Message */}
           {errors.images && (
-             <p className="text-sm text-red-500 flex items-center gap-1 mt-2">
+             <p className="text-sm text-red-500 flex items-center gap-1">
                <AlertCircle size={14} /> {errors.images.message as string}
              </p>
           )}
+
+          <div className="pt-4 border-t border-stone-100">
+             <label className="flex items-center gap-3 cursor-pointer">
+               <input 
+                  type="checkbox" 
+                  {...register("is_koko_enabled")} 
+                  className="w-5 h-5 accent-[#2D241E]" 
+               />
+               <span className="font-medium text-[#2D241E]">Enable Koko Installments</span>
+             </label>
+             <p className="text-xs text-stone-500 mt-1 ml-8">Allows customers to pay in 3 installments.</p>
+          </div>
         </div>
 
         {/* SUBMIT BUTTON */}

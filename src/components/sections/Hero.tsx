@@ -28,14 +28,14 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Image Section */}
+        
         <div className="lg:col-span-5 relative mt-12 lg:mt-0">
           <div className="relative w-full max-w-md mx-auto h-[450px] md:h-[550px]">
             
-            {/* Decorative Background */}
+           
             <div className="absolute inset-0 bg-[#EBE5D9] rounded-[30px] rotate-6 scale-[1.03] origin-bottom-right z-0 shadow-lg"></div>
             
-            {/* Image */}
+            
             <div className="relative w-full h-full rounded-[30px] overflow-hidden shadow-2xl z-10">
               <Image
                 src="/image.jpg"
@@ -50,7 +50,7 @@ export default function Hero() {
 
       </div>
 
-      {/* Bottom Divider */}
+      
       <div className="absolute bottom-10 left-0 w-full h-[1px] bg-stone-200 hidden md:block" />
     </section>
   );

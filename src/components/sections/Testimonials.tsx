@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus, Quote } from 'lucide-react';
 import Image from 'next/image';
 
-// Sample Data
 const reviews = [
   {
     id: 1,
@@ -31,7 +30,7 @@ const reviews = [
 ];
 
 export default function Testimonials() {
-  // State to track which review is open (Default: 0 = First one open)
+ 
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
 
   const toggleAccordion = (index: number) => {
@@ -41,30 +40,30 @@ export default function Testimonials() {
   return (
     <section className="py-24 px-6 md:px-20 bg-[#FAF9F6]">
       
-      {/* Header Section */}
+     
       <div className="mb-16">
         <h2 className="text-5xl font-medium md:text-6xl text-[#2D241E]">
           Clients Review
         </h2>
       </div>
 
-      {/* Reviews List */}
+      
       <div className="border-t border-[#2D241E]/10">
         {reviews.map((review, index) => (
           <div key={review.id} className="border-b border-[#2D241E]/10">
             
-            {/* --- Accordion Header (Clickable) --- */}
+            
             <button
               onClick={() => toggleAccordion(index)}
               className="w-full py-8 flex flex-col md:flex-row md:items-center justify-between gap-4 text-left group"
             >
               <div className="flex items-center gap-6">
-                {/* Icon (+ / -) */}
+                
                 <div className="text-[#2D241E] transition-transform duration-300">
                   {activeIndex === index ? <Minus size={24} /> : <Plus size={24} />}
                 </div>
 
-                {/* Avatar & Name */}
+               
                 <div className="flex items-center gap-4">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden bg-stone-200">
                     {/* Placeholder image if actual image is missing */}
