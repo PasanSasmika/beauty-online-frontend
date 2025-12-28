@@ -15,22 +15,33 @@ interface Product {
   variants: any;
 }
 
-const CATEGORIES = [
-  { id: 'all', label: 'All Products' },
-  { id: 'skincare', label: 'Skincare' },
-  { id: 'haircare', label: 'Haircare' },
-  { id: 'body', label: 'Body' },
-  { id: 'wellness', label: 'Wellness' },
-];
-
 export default function AllProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // NEW: Dynamic Categories State
+  const [categories, setCategories] = useState<{id: string, label: string}[]>([]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
- 
+  // 1. Fetch Categories
+  useEffect(() => {
+    fetch('http://localhost:5000/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        // Transform data for UI
+        const formatted = data.map((c: any) => ({ 
+            id: c.name.toLowerCase(), 
+            label: c.name 
+        }));
+        // Prepend 'All' option
+        setCategories([{ id: 'all', label: 'All Products' }, ...formatted]);
+      })
+      .catch(e => console.error("Error fetching categories", e));
+  }, []);
+
+  // 2. Fetch Products
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
@@ -59,6 +70,7 @@ export default function AllProductsPage() {
   return (
     <div className="min-h-screen bg-[#FAF9F6]">
       
+      {/* Header */}
       <div className="bg-[#2D241E] text-[#FAF9F6] pt-12 pb-24 px-6 md:px-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-[#8B9B86] hover:text-white mb-6 transition-colors">
@@ -90,11 +102,11 @@ export default function AllProductsPage() {
         </div>
       </div>
 
-      
+      {/* Dynamic Filter Tabs */}
       <div className="px-6 md:px-20 -mt-8 relative z-20">
         <div className="max-w-7xl mx-auto overflow-x-auto pb-4 scrollbar-hide">
           <div className="flex gap-2">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
@@ -111,7 +123,7 @@ export default function AllProductsPage() {
         </div>
       </div>
 
-     
+      {/* Product Grid */}
       <section className="py-12 px-6 md:px-20 max-w-7xl mx-auto min-h-[500px]">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -120,7 +132,7 @@ export default function AllProductsPage() {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-stone-100 shadow-sm">
-            <p className="text-xl  text-[#2D241E] mb-2">No products found</p>
+            <p className="text-xl text-[#2D241E] mb-2">No products found</p>
             <p className="text-stone-500">Try adjusting your search or filters</p>
             <button 
               onClick={() => { setSearchTerm(''); setSelectedCategory('all'); }}
@@ -145,21 +157,16 @@ export default function AllProductsPage() {
   );
 }
 
-
+// Helper Card Component
 function ProductCard({ product }: { product: Product }) {
- 
   let imageUrl = '/logo.png'; 
   try {
     let imageData = product.images;
-
     if (typeof imageData === 'string') {
         try {
-            if (imageData.startsWith('[')) {
-                imageData = JSON.parse(imageData);
-            }
+            if (imageData.startsWith('[')) imageData = JSON.parse(imageData);
         } catch (e) {}
     }
-
     if (Array.isArray(imageData) && imageData.length > 0) {
         imageUrl = `http://localhost:5000${imageData[0]}`;
     } else if (typeof imageData === 'string' && imageData.startsWith('/')) {
@@ -167,15 +174,12 @@ function ProductCard({ product }: { product: Product }) {
     }
   } catch (e) { console.error(e); }
 
-  
   let firstVariant = null;
   let displayPrice = 0;
   let displayOriginalPrice = 0;
-
   try {
      const v = product.variants; 
      const variantsArray = typeof v === 'string' ? JSON.parse(v) : v;
-     
      if (Array.isArray(variantsArray) && variantsArray.length > 0) {
         firstVariant = variantsArray[0];
         displayPrice = parseFloat(firstVariant.price);
@@ -204,24 +208,20 @@ function ProductCard({ product }: { product: Product }) {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           unoptimized={true} 
         />
-        
         {discount > 0 && (
           <span className="absolute top-3 left-3 bg-[#E11D48] text-white text-xs font-bold px-3 py-1 rounded-full z-10">
             -{discount}%
           </span>
         )}
       </div>
-
       <div className="p-5">
          <p className="text-xs text-stone-500 uppercase font-bold tracking-wider mb-1">{product.brand}</p>
          <h3 className="text-lg text-[#2D241E] truncate mb-2">{product.name}</h3>
-         
          {firstVariant && (
             <span className="inline-block text-[10px] uppercase bg-stone-100 px-2 py-1 rounded text-stone-600 font-medium mb-3">
                {firstVariant.size}
             </span>
          )}
-
          <div className="flex items-center gap-3">
            <span className="font-bold text-[#2D241E] text-lg">
              LKR {(displayPrice || 0).toLocaleString()}
