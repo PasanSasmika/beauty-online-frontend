@@ -7,6 +7,7 @@ import Contact from "@/components/sections/Contact";
 import Testimonials from "@/components/sections/Testimonials";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
 import Footer from "@/components/layout/Footer";
+import BrandMarquee from "@/components/sections/BrandMarquee";
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
@@ -29,6 +30,7 @@ export default function Home() {
       <Features />
       <Contact />
       <Testimonials/>
+      <BrandMarquee/>
       <WhyChooseUs/>
       <Footer/>
     </main>

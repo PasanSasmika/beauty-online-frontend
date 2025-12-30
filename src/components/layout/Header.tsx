@@ -12,7 +12,7 @@ import SignupForm from '@/components/auth/SignupForm';
 
 const navLinks = [
   { title: "Home", href: "/" },
-  { title: "Products", href: "#" },
+  { title: "Products", href: "/products" },
   { title: "About Us", href: "#" },
 ];
 
