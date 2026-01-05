@@ -192,6 +192,7 @@ function ProductCard({ product }: { product: Product }) {
     : 0;
 
   return (
+    <Link href={`/products/${product.id}`} className="block">
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -234,5 +235,6 @@ function ProductCard({ product }: { product: Product }) {
          </div>
        </div>
     </motion.div>
+    </Link>
   );
 }

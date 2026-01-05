@@ -39,7 +39,7 @@ export default function Preloader() {
                transition={{ duration: 0.5, delay: 0.2 }}
                className="text-[#2D241E] text-4xl md:text-6xl font-bold tracking-tight"
              >
-               <span className="block">Beauty Online</span>
+               <span className="block">Skincare.lk</span>
              </motion.h1>
           </div>
           

@@ -53,14 +53,14 @@ export default function Header() {
            <div className="relative w-12 h-12">
              <Image
                src="/logo.png"
-               alt="Beauty Online Logo"
+               alt="Skincare.lk Logo"
                fill 
                className="object-contain" 
                priority
              />
            </div>
            <span className="text-stone-800 text-xl font-bold tracking-tight">
-              Beauty Online
+              Skincare.lk
            </span>
         </Link>
 

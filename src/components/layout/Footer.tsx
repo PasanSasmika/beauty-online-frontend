@@ -23,7 +23,7 @@ export default function Footer() {
           >
             {/* Gradient Text */}
             <span className="bg-gradient-to-r from-[#2D241E] via-[#8B9B86] to-[#2D241E] bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-slow">
-              BEAUTY ONLINE
+              SKINCARE.LK
             </span>
           </motion.h1>
 
