@@ -12,7 +12,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   
-  // --- DEFINE SHIPPING COST ---
+  // --- CONFIG: Shipping Cost ---
   const SHIPPING_COST = 500;
   
   // Form State
@@ -29,15 +29,60 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API Call
-    await new Promise(r => setTimeout(r, 2000));
+    const totalAmount = cartTotal + SHIPPING_COST;
 
-    // Here you would normally send data to your backend, including cartTotal + SHIPPING_COST
-    
-    setLoading(false);
-    clearCart();
-    alert('Order Placed Successfully! Order ID: #ORD-' + Math.floor(Math.random() * 10000));
-    router.push('/');
+    try {
+      // 1. Prepare Order Payload
+      const orderData = {
+        customer: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          postalCode: formData.postalCode,
+        },
+        items: cart.map(item => ({
+          product_id: item.id, 
+          name: item.name,
+          size: item.size,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image
+        })),
+        total_amount: totalAmount,
+        shipping_cost: SHIPPING_COST,
+        payment_method: 'cod' // Hardcoded for now
+      };
+
+      // 2. Send to Backend
+      const res = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Order failed');
+      }
+
+      const data = await res.json();
+
+      // 3. Success
+      setLoading(false);
+      clearCart();
+      alert(`Order Placed Successfully! Order ID: #${data.orderId.slice(-6)}`);
+      router.push('/'); // Redirect home
+
+    } catch (error: any) {
+      console.error(error);
+      alert(`Failed to place order: ${error.message}`);
+      setLoading(false);
+    }
   };
 
   if (cart.length === 0) {
@@ -50,7 +95,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] py-12 px-4 md:px-20">
+    <div className="min-h-screen bg-[#FAF9F6] py-12 px-4 md:px-20 mt-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
         
         {/* LEFT: FORM */}
@@ -90,7 +135,7 @@ export default function CheckoutPage() {
                 <button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full bg-[#2D241E] text-white py-5 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4"
+                    className="w-full bg-[#2D241E] text-white py-5 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70"
                 >
                     {loading ? <Loader2 className="animate-spin" /> : 'Confirm Order'}
                 </button>
@@ -99,19 +144,20 @@ export default function CheckoutPage() {
 
         {/* RIGHT: SUMMARY */}
         <div className="lg:col-span-5">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100 sticky top-8">
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100 sticky top-32">
                 <h3 className="font-bold text-xl text-[#2D241E] mb-6">Order Summary</h3>
                 
                 <div className="space-y-4 max-h-80 overflow-y-auto pr-2 scrollbar-thin">
                     {cart.map((item) => (
                         <div key={item.variantId} className="flex gap-4">
-                            <div className="relative w-16 h-16 bg-stone-50 rounded-lg overflow-hidden shrink-0">
+                            <div className="relative w-16 h-16 bg-stone-50 rounded-lg overflow-hidden shrink-0 border border-stone-100">
+                                {/* Fixed Image Loading */}
                                 <Image 
                                     src={item.image} 
                                     alt={item.name} 
                                     fill 
                                     className="object-cover" 
-                                    unoptimized={true}
+                                    unoptimized={true} 
                                 />
                                 <span className="absolute top-0 right-0 bg-[#ee3f5c] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-bl-lg font-bold">
                                     {item.quantity}
@@ -133,12 +179,10 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex justify-between text-stone-600">
                         <span>Shipping</span>
-                        {/* UPDATE: Added Shipping Cost */}
-                        <span className="text-[#ee3f5c] font-medium">LKR {SHIPPING_COST}</span>
+                        <span className="text-[#ee3f5c] font-medium">LKR {SHIPPING_COST.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-[#2D241E] font-bold text-xl pt-2 border-t border-stone-100">
                         <span>Total</span>
-                        {/* UPDATE: Added Shipping to Total */}
                         <span>LKR {(cartTotal + SHIPPING_COST).toLocaleString()}</span>
                     </div>
                 </div>

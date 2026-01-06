@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, UserCircle, ShoppingBag } from 'lucide-react'; // Added ShoppingBag
+import { Menu, X, UserCircle, ShoppingBag, User } from 'lucide-react'; // Added User icon
 import Link from 'next/link';
 import Image from 'next/image';
-import { useCart } from '@/context/CartContext'; // Import Cart Hook
+import { useCart } from '@/context/CartContext'; 
+import { useAuth } from '@/context/AuthContext'; // <--- Import Auth Hook
 
-// Import the new separate files
+// Auth Components
 import LoginForm from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
 
@@ -21,8 +22,9 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   
-  // Cart Context
+  // Contexts
   const { toggleCart, cart } = useCart();
+  const { user } = useAuth(); // <--- Get current user state
 
   // Auth State
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -53,6 +55,7 @@ export default function Header() {
               fill 
               className="object-contain object-left"
               priority
+              unoptimized={true}
             />
           </div>
         </Link>
@@ -60,7 +63,7 @@ export default function Header() {
         {/* RIGHT SIDE ACTIONS */}
         <div className="flex items-center gap-4 md:gap-6 z-50">
           
-          {/* CART BUTTON (New) */}
+          {/* CART BUTTON */}
           <button 
             onClick={toggleCart}
             className="text-[#000000] hover:text-[#ee3f5c] transition-colors focus:outline-none relative"
@@ -73,13 +76,28 @@ export default function Header() {
             )}
           </button>
 
-          {/* USER BUTTON */}
-          <button 
-            onClick={toggleLogin}
-            className="text-[#000000] hover:text-[#ee3f5c] transition-colors focus:outline-none"
-          >
-             {isLoginOpen ? <X size={28} strokeWidth={1.5} /> : <UserCircle size={28} strokeWidth={1.5} />}
-          </button>
+          {/* USER ACTION: Check if User is Logged In */}
+          {user ? (
+            // LOGGED IN: Show Profile Link
+            <Link 
+              href="/profile" 
+              className="text-[#000000] hover:text-[#ee3f5c] transition-colors flex items-center justify-center"
+              title="My Profile"
+            >
+              {/* Solid User Icon for Logged In state */}
+              <div className="bg-[#000000] text-white p-1 rounded-full hover:bg-[#ee3f5c] transition-colors">
+                 <User size={20} />
+              </div>
+            </Link>
+          ) : (
+            // NOT LOGGED IN: Show Login Toggle
+            <button 
+              onClick={toggleLogin}
+              className="text-[#000000] hover:text-[#ee3f5c] transition-colors focus:outline-none"
+            >
+               {isLoginOpen ? <X size={28} strokeWidth={1.5} /> : <UserCircle size={28} strokeWidth={1.5} />}
+            </button>
+          )}
 
           {/* MENU BUTTON */}
           <button onClick={toggleMenu} className="flex items-center gap-2 text-[#000000] focus:outline-none group">
@@ -155,7 +173,7 @@ export default function Header() {
         )}
       </AnimatePresence>
 
-      {/* --- AUTH OVERLAY (Login / Signup) --- */}
+      {/* --- AUTH OVERLAY --- */}
       <AnimatePresence>
         {isLoginOpen && (
           <motion.div
