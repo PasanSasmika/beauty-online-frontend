@@ -24,9 +24,10 @@ export default function Hero() {
             <button className="flex items-center gap-2 bg-[#ee3f5c] text-white px-8 py-4 rounded-full font-semibold hover:bg-[#c1023e] transition-colors shadow-lg">
              View Collections<ArrowRight className="w-5 h-5" />
             </button></Link>
+            <Link href="/contact">
             <button className="bg-transparent border-2 border-[#000000] px-8 py-4 rounded-full font-semibold text-[#000000] hover:bg-[#000000] hover:text-white transition-colors">
               Contact Us
-            </button>
+            </button></Link>
           </div>
         </div>
 

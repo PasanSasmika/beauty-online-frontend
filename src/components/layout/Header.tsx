@@ -13,7 +13,7 @@ import SignupForm from '@/components/auth/SignupForm';
 const navLinks = [
   { title: "Home", href: "/" },
   { title: "Products", href: "/products" },
-  { title: "About Us", href: "#" },
+  { title: "About Us", href: "/about" },
 ];
 
 export default function Header() {
