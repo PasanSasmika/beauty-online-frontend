@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, UserCircle } from 'lucide-react'; // Removed ArrowRight (now in forms)
+import { Menu, X, UserCircle, ShoppingBag } from 'lucide-react'; // Added ShoppingBag
 import Link from 'next/link';
 import Image from 'next/image';
+import { useCart } from '@/context/CartContext'; // Import Cart Hook
 
 // Import the new separate files
 import LoginForm from '@/components/auth/LoginForm';
@@ -20,7 +21,10 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   
-  // New State: Which form to show? 'login' or 'signup'
+  // Cart Context
+  const { toggleCart, cart } = useCart();
+
+  // Auth State
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
   const toggleMenu = () => {
@@ -31,43 +35,44 @@ export default function Header() {
   const toggleLogin = () => {
     setIsLoginOpen(!isLoginOpen);
     if (isMenuOpen) setIsMenuOpen(false);
-    // Optional: Reset to login mode every time they close/open the modal
     if (!isLoginOpen) setAuthMode('login'); 
   };
 
   const headerBgClass = isMenuOpen || isLoginOpen ? 'bg-[#ee3f5c]' : 'bg-[#FAF9F6]';
-{authMode === 'login' ? (
-   <LoginForm 
-      onSwitch={() => setAuthMode('signup')} 
-      onClose={() => setIsLoginOpen(false)} // <--- Add this line
-   />
-) : (
-   <SignupForm onSwitch={() => setAuthMode('login')} />
-)}
+
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between transition-colors duration-300 ${headerBgClass}`}>
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 z-50">
-  {/* UPDATED: Changed w-20 h-20 to w-32 h-16 (or w-40 h-20).
-      "relative" is required for Next.js "fill" images.
-      "flex-shrink-0" prevents it from squishing on small screens.
-  */}
-  <div className="relative w-40 h-24 md:w-60 md:h-20 flex-shrink-0">
-    <Image
-      src="/skinlogo.png"
-      alt="Skincares.lk Logo"
-      fill 
-      className="object-contain object-left" // Added object-left to keep it anchored if container is wide
-      priority
-    />
-  </div>
-</Link>
+          <div className="relative w-40 h-24 md:w-60 md:h-20 flex-shrink-0">
+            <Image
+              src="/skinlogo.png"
+              alt="Skincares.lk Logo"
+              fill 
+              className="object-contain object-left"
+              priority
+            />
+          </div>
+        </Link>
 
         {/* RIGHT SIDE ACTIONS */}
         <div className="flex items-center gap-4 md:gap-6 z-50">
           
+          {/* CART BUTTON (New) */}
+          <button 
+            onClick={toggleCart}
+            className="text-[#000000] hover:text-[#ee3f5c] transition-colors focus:outline-none relative"
+          >
+            <ShoppingBag size={28} strokeWidth={1.5} />
+            {cart.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#ee3f5c] text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-[#FAF9F6]">
+                {cart.length}
+              </span>
+            )}
+          </button>
+
           {/* USER BUTTON */}
           <button 
             onClick={toggleLogin}
@@ -91,7 +96,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* --- MENU OVERLAY (Same as before) --- */}
+      {/* --- MENU OVERLAY --- */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -102,9 +107,7 @@ export default function Header() {
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
             className="fixed inset-0 z-40 bg-[#ee3f5c] pt-24 px-6 md:px-20 pb-10 flex flex-col justify-between"
           >
-             {/* Menu content code here... */}
              <div className="h-full flex flex-col md:flex-row md:items-end justify-between pb-10">
-                {/* ... existing navLinks map ... */}
                 <nav className="flex flex-col gap-4 mt-10 md:mt-0">
                 {navLinks.map((link, index) => (
                   <motion.div
@@ -123,7 +126,7 @@ export default function Header() {
                   </motion.div>
                 ))}
               </nav>
-              {/* Right Side: Contact Info (Desktop) */}
+              
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -136,7 +139,6 @@ export default function Header() {
               </motion.div>
             </div>
 
-            {/* Bottom Divider & Mobile Footer */}
             <motion.div 
               initial={{ scaleX: 0 }} 
               animate={{ scaleX: 1 }} 
@@ -153,7 +155,6 @@ export default function Header() {
         )}
       </AnimatePresence>
 
-
       {/* --- AUTH OVERLAY (Login / Signup) --- */}
       <AnimatePresence>
         {isLoginOpen && (
@@ -165,9 +166,11 @@ export default function Header() {
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
             className="fixed inset-0 z-40 bg-[#ee3f5c] flex items-center justify-center px-6"
           >
-             {/* Switch between Forms based on state */}
              {authMode === 'login' ? (
-                <LoginForm onSwitch={() => setAuthMode('signup')} />
+                <LoginForm 
+                  onSwitch={() => setAuthMode('signup')} 
+                  onClose={() => setIsLoginOpen(false)}
+                />
              ) : (
                 <SignupForm onSwitch={() => setAuthMode('login')} />
              )}
