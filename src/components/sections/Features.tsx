@@ -25,7 +25,7 @@ export default function Features() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/products');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
         const data = await res.json();
         setProducts(data);
       } catch (error) {
@@ -106,11 +106,11 @@ function ProductCard({ product }: { product: Product }) {
     }
 
     if (Array.isArray(rawImages) && rawImages.length > 0) {
-        // Map to full URLs
-        images = rawImages.map(img => `http://localhost:5000${img}`);
-    } else if (typeof rawImages === 'string' && rawImages.startsWith('/')) {
-        images = [`http://localhost:5000${rawImages}`];
-    }
+  // Map to full URLs using env variable
+  images = rawImages.map(img => `${process.env.NEXT_PUBLIC_API_URL}${img}`);
+} else if (typeof rawImages === 'string' && rawImages.startsWith('/')) {
+  images = [`${process.env.NEXT_PUBLIC_API_URL}${rawImages}`];
+}
   } catch (e) {
     console.error("Image logic error", e);
   }

@@ -22,18 +22,23 @@ export default function AdminProductsPage() {
 
   // 1. Fetch Products Logic
   const fetchProducts = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/products');
-      if (!res.ok) throw new Error('Failed to fetch data');
-      const data = await res.json();
-      setProducts(data);
-    } catch (err) {
-      setError('Could not load products. Is the backend running?');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/products`
+    );
+
+    if (!res.ok) throw new Error('Failed to fetch data');
+
+    const data = await res.json();
+    setProducts(data);
+  } catch (err) {
+    setError('Could not load products. Is the backend running?');
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchProducts();
@@ -44,24 +49,28 @@ export default function AdminProductsPage() {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${token}` 
-        }
-      });
+  const token = localStorage.getItem('token');
 
-      if (res.ok) {
-        setProducts(prev => prev.filter(p => p.id !== id));
-        alert('Product deleted successfully');
-      } else {
-        alert('Failed to delete.');
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-    } catch (error) {
-      console.error(error);
-      alert('Error connecting to server');
     }
+  );
+
+  if (!res.ok) {
+    throw new Error('Failed to delete product');
+  }
+
+  setProducts(prev => prev.filter(p => p.id !== id));
+  alert('Product deleted successfully');
+} catch (error) {
+  console.error(error);
+  alert('Error connecting to server');
+}
   };
 
   if (loading) return <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-[#000000]" /></div>;
@@ -101,7 +110,7 @@ export default function AdminProductsPage() {
                         let imageSrc = '/placeholder.jpg';
                         try {
                             const parsed = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
-                            if (Array.isArray(parsed) && parsed.length > 0) imageSrc = `http://localhost:5000${parsed[0]}`;
+                            if (Array.isArray(parsed) && parsed.length > 0) imageSrc = `${process.env.NEXT_PUBLIC_API_URL}${parsed[0]}`;
                         } catch (e) {}
 
                         // B. Variants Parsing (Price & Stock)

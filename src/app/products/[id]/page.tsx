@@ -68,7 +68,7 @@ export default function ProductOverviewPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`);
         if (!res.ok) throw new Error('Product not found');
         const data = await res.json();
         setProduct(data);
@@ -78,7 +78,7 @@ export default function ProductOverviewPage() {
         try {
             const rawImgs = typeof data.images === 'string' ? JSON.parse(data.images) : data.images;
             if (Array.isArray(rawImgs) && rawImgs.length > 0) {
-                imgs = rawImgs.map((path: string) => `http://localhost:5000${path}`);
+                imgs = rawImgs.map((path: string) =>`${process.env.NEXT_PUBLIC_API_URL}${path}`);
             } else {
                 imgs = ['/logo.png']; 
             }

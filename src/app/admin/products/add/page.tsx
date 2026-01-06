@@ -38,11 +38,14 @@ export default function AddProductPage() {
 
   // NEW: Fetch Categories on Load
   useEffect(() => {
-    fetch('http://localhost:5000/api/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error("Error loading categories", err));
-  }, []);
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to load categories');
+      return res.json();
+    })
+    .then(data => setCategories(data))
+    .catch(err => console.error('Error loading categories:', err));
+}, []);
 
   // --- 2. SETUP FORM ---
   const {
@@ -104,13 +107,15 @@ export default function AddProductPage() {
         });
       }
 
-      const res = await fetch('http://localhost:5000/api/products', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}` 
-        },
-        body: formData, 
-      });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`,
+  {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body: formData
+  }
+);
 
       if (!res.ok) {
         const errData = await res.json();

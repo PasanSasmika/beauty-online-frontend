@@ -40,35 +40,64 @@ export default function AdminOrdersPage() {
 
   // Fetch Orders
   const fetchOrders = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/orders');
-      const data = await res.json();
-      setOrders(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/orders`
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch orders');
     }
-  };
+
+    const data = await res.json();
+    setOrders(data);
+  } catch (error) {
+    console.error('Fetch orders error:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => { fetchOrders(); }, []);
 
   // Update Status
-  const handleStatusChange = async (id: string, newStatus: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/orders/${id}/status`, {
+ const handleStatusChange = async (id: string, newStatus: string) => {
+  try {
+    const token = localStorage.getItem('token');
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${id}/status`,
+      {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ status: newStatus })
-      });
-      // Update local state immediately for better UX
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, order_status: newStatus } : o));
-      if (selectedOrder && selectedOrder.id === id) {
-        setSelectedOrder(prev => prev ? { ...prev, order_status: newStatus } : null);
       }
-    } catch (e) { console.error(e); }
-  };
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to update order status');
+    }
+
+    // Optimistic UI update
+    setOrders(prev =>
+      prev.map(o =>
+        o.id === id ? { ...o, order_status: newStatus } : o
+      )
+    );
+
+    if (selectedOrder?.id === id) {
+      setSelectedOrder(prev =>
+        prev ? { ...prev, order_status: newStatus } : null
+      );
+    }
+  } catch (error) {
+    console.error('Order status update error:', error);
+  }
+};
 
   // Status Badge Color Helper
   const getStatusColor = (status: string) => {

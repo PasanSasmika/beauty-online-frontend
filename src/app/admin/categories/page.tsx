@@ -15,14 +15,21 @@ export default function CategoriesPage() {
 
   // Fetch Categories
   const fetchCategories = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/categories');
-      const data = await res.json();
-      setCategories(data);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/categories`
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch categories');
     }
-  };
+
+    const data = await res.json();
+    setCategories(data);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+  }
+};
 
   useEffect(() => { fetchCategories(); }, []);
 
@@ -33,39 +40,56 @@ export default function CategoriesPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/categories', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
-        },
-        body: JSON.stringify({ name: newCategory })
-      });
+  const token = localStorage.getItem('token');
 
-      if (res.ok) {
-        setNewCategory('');
-        fetchCategories(); // Refresh list
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to add category');
-      }
-    } catch (e) { console.error(e); } 
-    finally { setLoading(false); }
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/categories`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name: newCategory })
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error('Failed to create category');
+  }
+
+  fetchCategories();
+} catch (error) {
+  console.error('Create category error:', error);
+}
   };
 
   // Delete Category
   const handleDelete = async (id: number) => {
-    if(!confirm("Are you sure you want to delete this category?")) return;
-    try {
-        const token = localStorage.getItem('token');
-        await fetch(`http://localhost:5000/api/categories/${id}`, { 
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        fetchCategories();
-    } catch (e) { console.error(e); }
-  };
+  if (!confirm("Are you sure you want to delete this category?")) return;
+
+  try {
+    const token = localStorage.getItem('token');
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to delete category');
+    }
+
+    fetchCategories();
+  } catch (error) {
+    console.error('Delete category error:', error);
+  }
+};
 
   return (
     <div className="max-w-4xl mx-auto">

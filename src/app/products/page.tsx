@@ -27,19 +27,24 @@ export default function AllProductsPage() {
 
   // 1. Fetch Categories
   useEffect(() => {
-    fetch('http://localhost:5000/api/categories')
-      .then(res => res.json())
-      .then(data => {
-        // Transform data for UI
-        const formatted = data.map((c: any) => ({ 
-            id: c.name.toLowerCase(), 
-            label: c.name 
-        }));
-        // Prepend 'All' option
-        setCategories([{ id: 'all', label: 'All Products' }, ...formatted]);
-      })
-      .catch(e => console.error("Error fetching categories", e));
-  }, []);
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to fetch categories');
+      return res.json();
+    })
+    .then(data => {
+      const formatted = data.map((c: any) => ({
+        id: c.name.toLowerCase(),
+        label: c.name
+      }));
+
+      setCategories([
+        { id: 'all', label: 'All Products' },
+        ...formatted
+      ]);
+    })
+    .catch(e => console.error('Error fetching categories:', e));
+}, []);
 
   // 2. Fetch Products
   const fetchProducts = useCallback(async () => {
@@ -49,7 +54,7 @@ export default function AllProductsPage() {
       if (searchTerm) params.append('search', searchTerm);
       if (selectedCategory && selectedCategory !== 'all') params.append('category', selectedCategory);
 
-      const res = await fetch(`http://localhost:5000/api/products?${params.toString()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products?${params.toString()}`);
       const data = await res.json();
       setProducts(data);
     } catch (error) {
@@ -168,9 +173,9 @@ function ProductCard({ product }: { product: Product }) {
         } catch (e) {}
     }
     if (Array.isArray(imageData) && imageData.length > 0) {
-        imageUrl = `http://localhost:5000${imageData[0]}`;
+    imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${imageData[0]}`;
     } else if (typeof imageData === 'string' && imageData.startsWith('/')) {
-        imageUrl = `http://localhost:5000${imageData}`;
+    imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${imageData}`;
     }
   } catch (e) { console.error(e); }
 

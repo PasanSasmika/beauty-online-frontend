@@ -56,8 +56,9 @@ export default function EditProductPage() {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${id}`);
-        if (!res.ok) throw new Error('Product not found');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`);
+
+  if (!res.ok) throw new Error('Product not found');
         
         const dbData = await res.json();
         
@@ -132,7 +133,7 @@ export default function EditProductPage() {
       // Send variants as JSON string
       formData.append('variants', JSON.stringify(data.variants));
 
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
