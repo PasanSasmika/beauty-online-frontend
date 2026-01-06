@@ -62,7 +62,7 @@ export default function LoginForm({ onSwitch, onClose }: LoginFormProps) {
   return (
     <div className="w-full max-w-md bg-[#FAF9F6] p-8 md:p-12 rounded-3xl shadow-2xl">
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-serif font-bold text-[#2D241E]">Welcome Back</h2>
+        <h2 className="text-3xl font-serif font-bold text-[#000000]">Welcome Back</h2>
         <p className="text-stone-500 mt-2">Please enter your details to sign in.</p>
       </div>
 
@@ -75,33 +75,33 @@ export default function LoginForm({ onSwitch, onClose }: LoginFormProps) {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-[#2D241E] mb-2">Email Address</label>
+          <label className="block text-sm font-medium text-[#000000] mb-2">Email Address</label>
           <input 
             type="email" 
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#8B9B86] text-[#2D241E]"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#ee3f5c] text-[#000000]"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-[#2D241E] mb-2">Password</label>
+          <label className="block text-sm font-medium text-[#000000] mb-2">Password</label>
           <input 
             type="password" 
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#8B9B86] text-[#2D241E]"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#ee3f5c] text-[#000000]"
           />
         </div>
 
         <button 
           type="submit" 
           disabled={loading}
-          className="w-full bg-[#2D241E] text-white py-4 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full bg-[#000000] text-white py-4 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
@@ -118,7 +118,7 @@ export default function LoginForm({ onSwitch, onClose }: LoginFormProps) {
 
       <p className="text-center mt-8 text-stone-500 text-sm">
         Don't have an account?{' '}
-        <button onClick={onSwitch} className="text-[#2D241E] font-bold hover:underline">
+        <button onClick={onSwitch} className="text-[#000000] font-bold hover:underline">
           Sign up
         </button>
       </p>

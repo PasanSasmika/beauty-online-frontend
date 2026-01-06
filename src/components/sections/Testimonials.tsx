@@ -42,15 +42,15 @@ export default function Testimonials() {
       
      
       <div className="mb-16">
-        <h2 className="text-5xl font-medium md:text-6xl text-[#2D241E]">
+        <h2 className="text-5xl font-medium md:text-6xl text-[#000000]">
           Clients Review
         </h2>
       </div>
 
       
-      <div className="border-t border-[#2D241E]/10">
+      <div className="border-t border-[#000000]/10">
         {reviews.map((review, index) => (
-          <div key={review.id} className="border-b border-[#2D241E]/10">
+          <div key={review.id} className="border-b border-[#000000]/10">
             
             
             <button
@@ -59,7 +59,7 @@ export default function Testimonials() {
             >
               <div className="flex items-center gap-6">
                 
-                <div className="text-[#2D241E] transition-transform duration-300">
+                <div className="text-[#000000] transition-transform duration-300">
                   {activeIndex === index ? <Minus size={24} /> : <Plus size={24} />}
                 </div>
 
@@ -81,7 +81,7 @@ export default function Testimonials() {
                      {/* Fallback color circle if image fails */}
                     <div className="absolute inset-0 bg-stone-300 -z-10" />
                   </div>
-                  <span className="text-xl font-medium text-[#2D241E]">
+                  <span className="text-xl font-medium text-[#000000]">
                     {review.name}
                   </span>
                 </div>
@@ -108,15 +108,15 @@ export default function Testimonials() {
                     <div className="bg-[#EBE5D9]/50 p-8 md:p-12 rounded-2xl flex flex-col items-center text-center relative">
                       
                       {/* Quote Icon */}
-                      <Quote className="text-[#2D241E] mb-6 opacity-80" size={32} fill="currentColor" />
+                      <Quote className="text-[#000000] mb-6 opacity-80" size={32} fill="currentColor" />
                       
                       {/* Review Text */}
-                      <p className="text-lg md:text-xl text-[#2D241E]/80 leading-relaxed max-w-3xl  italic">
+                      <p className="text-lg md:text-xl text-[#000000]/80 leading-relaxed max-w-3xl  italic">
                         &quot;{review.text}&quot;
                       </p>
 
                       {/* Small decorative line */}
-                      <div className="w-24 h-[1px] bg-[#2D241E]/20 mt-8 mb-4" />
+                      <div className="w-24 h-[1px] bg-[#000000]/20 mt-8 mb-4" />
                       
                       
                     </div>

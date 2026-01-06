@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <main className="relative">
       <motion.div
-        className="fixed top-0 left-0 right-0 h-2 bg-[#8B9B86] origin-left z-50"
+        className="fixed top-0 left-0 right-0 h-2 bg-[#ee3f5c] origin-left z-50"
         style={{ scaleX }}
       />
 

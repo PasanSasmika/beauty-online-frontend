@@ -64,16 +64,16 @@ export default function AdminProductsPage() {
     }
   };
 
-  if (loading) return <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-[#2D241E]" /></div>;
+  if (loading) return <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-[#000000]" /></div>;
   if (error) return <div className="p-10 text-red-500 flex items-center gap-2"><AlertCircle /> {error}</div>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-serif font-bold text-[#2D241E]">Product Inventory</h1>
+        <h1 className="text-3xl font-serif font-bold text-[#000000]">Product Inventory</h1>
         <Link 
             href="/admin/products/add" 
-            className="flex items-center gap-2 bg-[#2D241E] text-white px-4 py-2 rounded-lg hover:bg-stone-800 transition-colors"
+            className="flex items-center gap-2 bg-[#000000] text-white px-4 py-2 rounded-lg hover:bg-stone-800 transition-colors"
         >
             <Plus size={18} /> Add New
         </Link>
@@ -125,7 +125,7 @@ export default function AdminProductsPage() {
                                         <img src={imageSrc} alt={product.name} className="w-full h-full object-cover" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-[#2D241E]">{product.name}</p>
+                                        <p className="font-medium text-[#000000]">{product.name}</p>
                                         <p className="text-xs text-stone-500">{product.brand}</p>
                                     </div>
                                 </td>

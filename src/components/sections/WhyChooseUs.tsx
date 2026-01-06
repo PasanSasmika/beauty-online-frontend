@@ -41,7 +41,7 @@ export default function WhyChooseUs() {
           priority
         />
         
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2D241E]/90 to-[#2D241E]/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#000000]/90 to-[#000000]/40" />
       </div>
 
       <div className="container relative z-10 mx-auto px-6 md:px-20">
@@ -89,7 +89,7 @@ export default function WhyChooseUs() {
               >
                 <div className="flex items-start gap-6">
                   
-                  <div className="p-3 bg-[#FAF9F6] rounded-full text-[#2D241E] shrink-0">
+                  <div className="p-3 bg-[#FAF9F6] rounded-full text-[#000000] shrink-0">
                     <feature.icon size={24} strokeWidth={1.5} />
                   </div>
                   

@@ -70,17 +70,17 @@ export default function CategoriesPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-[#2D241E] rounded-lg text-white">
+        <div className="p-3 bg-[#000000] rounded-lg text-white">
             <Tags size={24} />
         </div>
-        <h1 className="text-3xl font-serif font-bold text-[#2D241E]">Manage Categories</h1>
+        <h1 className="text-3xl font-serif font-bold text-[#000000]">Manage Categories</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left: Add Form */}
         <div className="md:col-span-1">
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm sticky top-8">
-                <h2 className="font-bold text-[#2D241E] mb-4">Add New Category</h2>
+                <h2 className="font-bold text-[#000000] mb-4">Add New Category</h2>
                 <form onSubmit={handleAdd} className="space-y-4">
                     <div>
                         <label className="text-xs font-semibold text-stone-500 uppercase mb-1 block">Category Name</label>
@@ -88,12 +88,12 @@ export default function CategoriesPage() {
                             value={newCategory}
                             onChange={(e) => setNewCategory(e.target.value)}
                             placeholder="e.g. Serums"
-                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2D241E] outline-none"
+                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#000000] outline-none"
                         />
                     </div>
                     <button 
                         disabled={loading || !newCategory} 
-                        className="w-full bg-[#2D241E] text-white px-4 py-3 rounded-lg font-medium hover:bg-stone-800 transition-colors flex justify-center items-center gap-2 disabled:opacity-70"
+                        className="w-full bg-[#000000] text-white px-4 py-3 rounded-lg font-medium hover:bg-stone-800 transition-colors flex justify-center items-center gap-2 disabled:opacity-70"
                     >
                         {loading ? <Loader2 className="animate-spin" size={20} /> : <><Plus size={20} /> Add Category</>}
                     </button>
@@ -110,7 +110,7 @@ export default function CategoriesPage() {
                 <div className="divide-y divide-stone-100">
                     {categories.map((cat) => (
                         <div key={cat.id} className="flex items-center justify-between p-4 hover:bg-stone-50 transition-colors group">
-                            <span className="font-medium text-[#2D241E]">{cat.name}</span>
+                            <span className="font-medium text-[#000000]">{cat.name}</span>
                             <button 
                                 onClick={() => handleDelete(cat.id)} 
                                 className="text-stone-300 hover:text-red-500 p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100"

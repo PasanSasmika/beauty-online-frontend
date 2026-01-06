@@ -154,7 +154,7 @@ export default function EditProductPage() {
   if (!isDataLoaded) {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50">
-            <Loader2 className="animate-spin text-[#2D241E] w-10 h-10 mb-4" />
+            <Loader2 className="animate-spin text-[#000000] w-10 h-10 mb-4" />
             <p className="text-stone-500 font-medium">Loading product details...</p>
         </div>
     );
@@ -167,9 +167,9 @@ export default function EditProductPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
             <Link href="/admin/products" className="p-2 bg-white rounded-full hover:bg-stone-200 transition-colors">
-                <ArrowLeft size={20} className="text-[#2D241E]" />
+                <ArrowLeft size={20} className="text-[#000000]" />
             </Link>
-            <h1 className="text-3xl font-serif font-bold text-[#2D241E]">Edit Product</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#000000]">Edit Product</h1>
         </div>
       </div>
 
@@ -177,7 +177,7 @@ export default function EditProductPage() {
         
         {/* DETAILS SECTION */}
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-6">
-            <h2 className="font-bold text-lg text-[#2D241E] border-b pb-2 mb-4">Product Information</h2>
+            <h2 className="font-bold text-lg text-[#000000] border-b pb-2 mb-4">Product Information</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -216,12 +216,12 @@ export default function EditProductPage() {
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
            <div className="flex justify-between items-center mb-6 border-b pb-4">
              <div>
-                <h2 className="font-bold text-lg text-[#2D241E]">Sizes & Prices</h2>
+                <h2 className="font-bold text-lg text-[#000000]">Sizes & Prices</h2>
              </div>
              <button 
                type="button"
                onClick={() => append({ size: '', price: 0, quantity: 0, original_price: 0 })}
-               className="flex items-center gap-2 px-4 py-2 bg-[#F5F5F4] hover:bg-[#E7E5E4] text-[#2D241E] rounded-lg text-sm font-medium transition-colors"
+               className="flex items-center gap-2 px-4 py-2 bg-[#F5F5F4] hover:bg-[#E7E5E4] text-[#000000] rounded-lg text-sm font-medium transition-colors"
              >
                <Plus size={16} /> Add Size
              </button>
@@ -270,15 +270,15 @@ export default function EditProductPage() {
 
         {/* SETTINGS */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex items-center gap-4">
-             <input type="checkbox" id="koko_toggle" {...register("is_koko_enabled")} className="w-5 h-5 accent-[#2D241E] cursor-pointer" />
+             <input type="checkbox" id="koko_toggle" {...register("is_koko_enabled")} className="w-5 h-5 accent-[#000000] cursor-pointer" />
              <label htmlFor="koko_toggle" className="cursor-pointer">
-                <span className="block font-bold text-[#2D241E]">Enable Koko Installments</span>
+                <span className="block font-bold text-[#000000]">Enable Koko Installments</span>
              </label>
         </div>
 
         {/* SUBMIT */}
         <div className="flex justify-end pt-4 border-t border-stone-200">
-            <button type="submit" disabled={isSaving} className="flex items-center gap-2 bg-[#2D241E] text-white px-8 py-4 rounded-xl font-bold hover:bg-stone-800 transition-all shadow-lg disabled:opacity-70">
+            <button type="submit" disabled={isSaving} className="flex items-center gap-2 bg-[#000000] text-white px-8 py-4 rounded-xl font-bold hover:bg-stone-800 transition-all shadow-lg disabled:opacity-70">
                 {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : <><Save className="w-5 h-5" /> Save Changes</>}
             </button>
         </div>

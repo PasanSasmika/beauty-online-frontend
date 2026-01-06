@@ -29,7 +29,7 @@ export default function Preloader() {
           // Slide Up Animation (Exit)
           exit={{ y: "-100%" }}
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#8B9B86]"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#ee3f5c]"
         >
           {/* Animated Text */}
           <div className="overflow-hidden">
@@ -37,9 +37,9 @@ export default function Preloader() {
                initial={{ y: "100%" }}
                animate={{ y: 0 }}
                transition={{ duration: 0.5, delay: 0.2 }}
-               className="text-[#2D241E] text-4xl md:text-6xl font-bold tracking-tight"
+               className="text-[#000000] text-4xl md:text-6xl font-bold tracking-tight"
              >
-               <span className="block">Skincare.lk</span>
+               <span className="block">Skincares.lk</span>
              </motion.h1>
           </div>
           

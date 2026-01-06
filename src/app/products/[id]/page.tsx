@@ -113,7 +113,7 @@ export default function ProductOverviewPage() {
     if (type === 'inc' && selectedVariant && quantity < selectedVariant.quantity) setQuantity(q => q + 1);
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#2D241E]" size={40} /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#000000]" size={40} /></div>;
   if (!product || !selectedVariant) return <div className="text-center py-20">Product not found</div>;
 
   // Calculate Discount
@@ -128,7 +128,7 @@ export default function ProductOverviewPage() {
       
       {/* Breadcrumb / Back */}
       <div className="max-w-7xl mx-auto px-6 md:px-20 pt-8 pb-4">
-        <Link href="/products" className="inline-flex items-center gap-2 text-stone-500 hover:text-[#2D241E] transition-colors text-sm font-medium">
+        <Link href="/products" className="inline-flex items-center gap-2 text-stone-500 hover:text-[#000000] transition-colors text-sm font-medium">
             <ArrowLeft size={16} /> Back to Shop
         </Link>
       </div>
@@ -160,7 +160,7 @@ export default function ProductOverviewPage() {
                         key={idx} 
                         onClick={() => setSelectedImage(img)}
                         className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                            selectedImage === img ? 'border-[#2D241E]' : 'border-transparent hover:border-stone-300'
+                            selectedImage === img ? 'border-[#000000]' : 'border-transparent hover:border-stone-300'
                         }`}
                     >
                         <Image src={img} alt="thumbnail" fill className="object-cover" unoptimized={true} />
@@ -174,7 +174,7 @@ export default function ProductOverviewPage() {
             
             {/* Brand & Country */}
             <div className="flex items-center justify-between mb-3">
-                <span className="text-[#8B9B86] font-bold tracking-widest text-xs uppercase">{product.brand}</span>
+                <span className="text-[ee3f5c] font-bold tracking-widest text-xs uppercase">{product.brand}</span>
                 
                 {/* Country Flag Display */}
                 {product.country && (
@@ -196,7 +196,7 @@ export default function ProductOverviewPage() {
                 )}
             </div>
             
-            <h1 className="text-4xl  font-bold text-[#2D241E] mb-4 leading-tight">{product.name}</h1>
+            <h1 className="text-4xl  font-bold text-[#000000] mb-4 leading-tight">{product.name}</h1>
             
             {/* Reviews */}
             <div className="flex items-center gap-2 mb-6">
@@ -208,7 +208,7 @@ export default function ProductOverviewPage() {
 
             {/* Price */}
             <div className="flex items-end gap-4 mb-8 border-b border-stone-200 pb-8">
-                <span className="text-4xl font-bold text-[#2D241E]">
+                <span className="text-4xl font-bold text-[#000000]">
                     LKR {selectedVariant.price.toLocaleString()}
                 </span>
                 {selectedVariant.original_price > 0 && (
@@ -228,7 +228,7 @@ export default function ProductOverviewPage() {
             {/* Variant Selector */}
             <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
-                    <label className="text-xs font-bold text-[#2D241E] uppercase">Select Size</label>
+                    <label className="text-xs font-bold text-[#000000] uppercase">Select Size</label>
                     <span className="text-xs text-stone-400">{selectedVariant.quantity} items in stock</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -238,8 +238,8 @@ export default function ProductOverviewPage() {
                             onClick={() => { setSelectedVariant(v); setQuantity(1); }}
                             className={`px-6 py-3 rounded-lg border text-sm font-medium transition-all ${
                                 selectedVariant === v 
-                                    ? 'bg-[#2D241E] text-white border-[#2D241E] shadow-md' 
-                                    : 'bg-white text-stone-600 border-stone-200 hover:border-[#2D241E]'
+                                    ? 'bg-[#000000] text-white border-[#000000] shadow-md' 
+                                    : 'bg-white text-stone-600 border-stone-200 hover:border-[#000000]'
                             }`}
                         >
                             {v.size}
@@ -253,15 +253,15 @@ export default function ProductOverviewPage() {
                 <div className="flex flex-col sm:flex-row gap-4">
                     {/* Qty */}
                     <div className="flex items-center bg-white border border-stone-200 rounded-xl w-max shadow-sm">
-                        <button onClick={() => handleQuantity('dec')} className="p-4 text-stone-500 hover:text-[#2D241E]"><Minus size={18}/></button>
-                        <span className="w-8 text-center font-bold text-[#2D241E]">{quantity}</span>
-                        <button onClick={() => handleQuantity('inc')} className="p-4 text-stone-500 hover:text-[#2D241E]"><Plus size={18}/></button>
+                        <button onClick={() => handleQuantity('dec')} className="p-4 text-stone-500 hover:text-[#000000]"><Minus size={18}/></button>
+                        <span className="w-8 text-center font-bold text-[#000000]">{quantity}</span>
+                        <button onClick={() => handleQuantity('inc')} className="p-4 text-stone-500 hover:text-[#000000]"><Plus size={18}/></button>
                     </div>
 
                     {/* Add To Cart */}
                     <button 
                         disabled={selectedVariant.quantity === 0}
-                        className="flex-1 bg-white border-2 border-[#2D241E] text-[#2D241E] py-4 rounded-xl font-bold hover:bg-stone-50 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                        className="flex-1 bg-white border-2 border-[#000000] text-[#000000] py-4 rounded-xl font-bold hover:bg-stone-50 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                     >
                         <ShoppingBag size={20} />
                         Add to Cart
@@ -271,7 +271,7 @@ export default function ProductOverviewPage() {
                 {/* BUY IT NOW (Full Width) */}
                 <button 
                     disabled={selectedVariant.quantity === 0}
-                    className="w-full bg-[#2D241E] text-white py-4 rounded-xl font-bold hover:bg-stone-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-70"
+                    className="w-full bg-[#000000] text-white py-4 rounded-xl font-bold hover:bg-stone-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-70"
                 >
                     <Zap size={20} fill="currentColor" />
                     Buy It Now
@@ -283,11 +283,11 @@ export default function ProductOverviewPage() {
                 
                 {/* Standard Info */}
                 <div className="flex items-center gap-3">
-                    <Truck size={20} className="text-[#8B9B86]" />
+                    <Truck size={20} className="text-[ee3f5c]" />
                     <span>Island-wide Delivery</span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <ShieldCheck size={20} className="text-[#8B9B86]" />
+                    <ShieldCheck size={20} className="text-[ee3f5c]" />
                     <span>100% Authentic</span>
                 </div>
 
@@ -315,7 +315,7 @@ export default function ProductOverviewPage() {
                     <div className="col-span-2 pt-4 mt-2 border-t border-stone-100">
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col">
-                                <span className="font-bold text-[#2D241E] text-sm">Pay in 3</span>
+                                <span className="font-bold text-[#000000] text-sm">Pay in 3</span>
                                 <span>Installments of LKR {((selectedVariant.price)/3).toFixed(2)}</span>
                             </div>
                             <div className="w-16 h-8 relative">

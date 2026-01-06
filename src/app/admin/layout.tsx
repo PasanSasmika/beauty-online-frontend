@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isAuthorized) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-[#FAF9F6]">
-        <Loader2 size={40} className="animate-spin text-[#2D241E]" />
+        <Loader2 size={40} className="animate-spin text-[#000000]" />
       </div>
     );
   }

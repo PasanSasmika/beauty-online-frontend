@@ -10,9 +10,9 @@ export default function Hero() {
         {/* Text Content */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           
-          <h1 className="text-4xl md:text-5xl  lg:text-6xl font-bold text-[#2D241E] leading-[1.15]">
+          <h1 className="text-4xl md:text-5xl  lg:text-6xl font-bold text-[#000000] leading-[1.15]">
             Where Elegance <br />
-            <span className="text-[#8B9B86]">Truly Meets Radiance</span>
+            <span className="text-[#ee3f5c]">Truly Meets Radiance</span>
           </h1>
 
           <p className="text-lg md:text-xl text-stone-600 max-w-lg leading-relaxed font-medium opacity-90">
@@ -21,10 +21,10 @@ export default function Hero() {
 
           <div className="flex flex-wrap gap-4 pt-4">
             <Link href="/products">
-            <button className="flex items-center gap-2 bg-[#8B9B86] text-white px-8 py-4 rounded-full font-semibold hover:bg-[#7A8E74] transition-colors shadow-lg">
+            <button className="flex items-center gap-2 bg-[#ee3f5c] text-white px-8 py-4 rounded-full font-semibold hover:bg-[#c1023e] transition-colors shadow-lg">
              View Collections<ArrowRight className="w-5 h-5" />
             </button></Link>
-            <button className="bg-transparent border-2 border-[#2D241E] px-8 py-4 rounded-full font-semibold text-[#2D241E] hover:bg-[#2D241E] hover:text-white transition-colors">
+            <button className="bg-transparent border-2 border-[#000000] px-8 py-4 rounded-full font-semibold text-[#000000] hover:bg-[#000000] hover:text-white transition-colors">
               Contact Us
             </button>
           </div>

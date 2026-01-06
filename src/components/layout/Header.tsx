@@ -35,7 +35,7 @@ export default function Header() {
     if (!isLoginOpen) setAuthMode('login'); 
   };
 
-  const headerBgClass = isMenuOpen || isLoginOpen ? 'bg-[#8B9B86]' : 'bg-[#FAF9F6]';
+  const headerBgClass = isMenuOpen || isLoginOpen ? 'bg-[#ee3f5c]' : 'bg-[#FAF9F6]';
 {authMode === 'login' ? (
    <LoginForm 
       onSwitch={() => setAuthMode('signup')} 
@@ -50,36 +50,34 @@ export default function Header() {
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 z-50">
-           <div className="relative w-12 h-12">
-             <Image
-               src="/logo.png"
-               alt="Skincare.lk Logo"
-               fill 
-               className="object-contain" 
-               priority
-             />
-           </div>
-           <span className="text-stone-800 text-xl font-bold tracking-tight">
-              Skincare.lk
-           </span>
-        </Link>
+  {/* UPDATED: Changed w-20 h-20 to w-32 h-16 (or w-40 h-20).
+      "relative" is required for Next.js "fill" images.
+      "flex-shrink-0" prevents it from squishing on small screens.
+  */}
+  <div className="relative w-40 h-24 md:w-60 md:h-20 flex-shrink-0">
+    <Image
+      src="/skinlogo.png"
+      alt="Skincare.lk Logo"
+      fill 
+      className="object-contain object-left" // Added object-left to keep it anchored if container is wide
+      priority
+    />
+  </div>
+</Link>
 
         {/* RIGHT SIDE ACTIONS */}
         <div className="flex items-center gap-4 md:gap-6 z-50">
-          <button className="hidden md:block bg-[#2D241E] text-[#FAF9F6] px-6 py-2 rounded-full font-medium hover:bg-stone-800 transition-colors">
-            Order Now
-          </button>
-
+          
           {/* USER BUTTON */}
           <button 
             onClick={toggleLogin}
-            className="text-[#2D241E] hover:text-[#8B9B86] transition-colors focus:outline-none"
+            className="text-[#000000] hover:text-[#ee3f5c] transition-colors focus:outline-none"
           >
              {isLoginOpen ? <X size={28} strokeWidth={1.5} /> : <UserCircle size={28} strokeWidth={1.5} />}
           </button>
 
           {/* MENU BUTTON */}
-          <button onClick={toggleMenu} className="flex items-center gap-2 text-[#2D241E] focus:outline-none group">
+          <button onClick={toggleMenu} className="flex items-center gap-2 text-[#000000] focus:outline-none group">
             <div className="relative w-6 h-6">
               <motion.div initial={false} animate={{ opacity: isMenuOpen ? 0 : 1, rotate: isMenuOpen ? 90 : 0 }} className="absolute inset-0">
                 <Menu size={28} strokeWidth={1.5} />
@@ -102,7 +100,7 @@ export default function Header() {
             animate={{ y: 0 }}
             exit={{ y: "-100%" }}
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-40 bg-[#8B9B86] pt-24 px-6 md:px-20 pb-10 flex flex-col justify-between"
+            className="fixed inset-0 z-40 bg-[#ee3f5c] pt-24 px-6 md:px-20 pb-10 flex flex-col justify-between"
           >
              {/* Menu content code here... */}
              <div className="h-full flex flex-col md:flex-row md:items-end justify-between pb-10">
@@ -118,7 +116,7 @@ export default function Header() {
                     <Link 
                       href={link.href} 
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-5xl md:text-7xl font-medium text-[#2D241E] hover:text-white transition-colors block"
+                      className="text-5xl md:text-7xl font-medium text-[#000000] hover:text-white transition-colors block"
                     >
                       {link.title}
                     </Link>
@@ -130,7 +128,7 @@ export default function Header() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="hidden md:block text-right space-y-2 text-[#2D241E]"
+                className="hidden md:block text-right space-y-2 text-[#000000]"
               >
                 <p className="text-lg opacity-70">Contact Us</p>
                 <p className="text-2xl font-medium">+94 71 806 0000</p>
@@ -143,10 +141,10 @@ export default function Header() {
               initial={{ scaleX: 0 }} 
               animate={{ scaleX: 1 }} 
               transition={{ delay: 0.4, duration: 0.8 }}
-              className="w-full h-[1px] bg-[#2D241E]/20 origin-left"
+              className="w-full h-[1px] bg-[#000000]/20 origin-left"
             />
             
-            <div className="md:hidden mt-6 text-[#2D241E] space-y-1">
+            <div className="md:hidden mt-6 text-[#000000] space-y-1">
                <p className="font-medium">beautyonline.lk@gmail.com</p>
                <p className="opacity-60">+94 71 806 0000</p>
             </div>
@@ -165,7 +163,7 @@ export default function Header() {
             animate={{ y: 0 }}
             exit={{ y: "-100%" }}
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-40 bg-[#8B9B86] flex items-center justify-center px-6"
+            className="fixed inset-0 z-40 bg-[#ee3f5c] flex items-center justify-center px-6"
           >
              {/* Switch between Forms based on state */}
              {authMode === 'login' ? (

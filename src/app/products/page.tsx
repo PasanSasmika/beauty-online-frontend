@@ -71,9 +71,9 @@ export default function AllProductsPage() {
     <div className="min-h-screen bg-[#FAF9F6]">
       
       {/* Header */}
-      <div className="bg-[#2D241E] text-[#FAF9F6] pt-12 pb-24 px-6 md:px-20 relative overflow-hidden">
+      <div className="bg-[#000000] text-[#FAF9F6] pt-12 pb-24 px-6 md:px-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2 text-[#8B9B86] hover:text-white mb-6 transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-[#ee3f5c] hover:text-white mb-6 transition-colors">
              <ArrowLeft size={16} /> Back to Home
           </Link>
           <h1 className=" text-4xl md:text-5xl font-bold mb-8">Shop Collection</h1>
@@ -112,8 +112,8 @@ export default function AllProductsPage() {
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`whitespace-nowrap px-6 py-3 rounded-full text-sm font-medium transition-all shadow-sm border ${
                   selectedCategory === cat.id 
-                    ? 'bg-[#2D241E] text-white border-[#2D241E]' 
-                    : 'bg-white text-stone-600 border-stone-200 hover:border-[#2D241E] hover:text-[#2D241E]'
+                    ? 'bg-[#000000] text-white border-[#000000]' 
+                    : 'bg-white text-stone-600 border-stone-200 hover:border-[#000000] hover:text-[#000000]'
                 }`}
               >
                 {cat.label}
@@ -127,16 +127,16 @@ export default function AllProductsPage() {
       <section className="py-12 px-6 md:px-20 max-w-7xl mx-auto min-h-[500px]">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Loader2 className="animate-spin text-[#2D241E]" size={40} />
+            <Loader2 className="animate-spin text-[#000000]" size={40} />
             <p className="text-stone-500">Updating collection...</p>
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-stone-100 shadow-sm">
-            <p className="text-xl text-[#2D241E] mb-2">No products found</p>
+            <p className="text-xl text-[#000000] mb-2">No products found</p>
             <p className="text-stone-500">Try adjusting your search or filters</p>
             <button 
               onClick={() => { setSearchTerm(''); setSelectedCategory('all'); }}
-              className="mt-6 text-[#8B9B86] hover:text-[#2D241E] font-medium underline"
+              className="mt-6 text-[#ee3f5c] hover:text-[#000000] font-medium underline"
             >
               Clear all filters
             </button>
@@ -198,7 +198,7 @@ function ProductCard({ product }: { product: Product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="group relative bg-white rounded-2xl overflow-hidden shadow-sm border border-[#2D241E]/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+      className="group relative bg-white rounded-2xl overflow-hidden shadow-sm border border-[#000000]/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
     >
       <div className="relative aspect-[3/4] bg-stone-100 overflow-hidden">
         <Image
@@ -217,14 +217,14 @@ function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-5">
          <p className="text-xs text-stone-500 uppercase font-bold tracking-wider mb-1">{product.brand}</p>
-         <h3 className="text-lg text-[#2D241E] truncate mb-2">{product.name}</h3>
+         <h3 className="text-lg text-[#000000] truncate mb-2">{product.name}</h3>
          {firstVariant && (
             <span className="inline-block text-[10px] uppercase bg-stone-100 px-2 py-1 rounded text-stone-600 font-medium mb-3">
                {firstVariant.size}
             </span>
          )}
          <div className="flex items-center gap-3">
-           <span className="font-bold text-[#2D241E] text-lg">
+           <span className="font-bold text-[#000000] text-lg">
              LKR {(displayPrice || 0).toLocaleString()}
            </span>
            {displayOriginalPrice > 0 && (

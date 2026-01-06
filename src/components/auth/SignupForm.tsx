@@ -41,7 +41,7 @@ export default function SignupForm({ onSwitch }: SignupFormProps) {
   return (
     <div className="w-full max-w-md bg-[#FAF9F6] p-8 md:p-12 rounded-3xl shadow-2xl">
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-serif font-bold text-[#2D241E]">Create Account</h2>
+        <h2 className="text-3xl font-serif font-bold text-[#000000]">Create Account</h2>
         <p className="text-stone-500 mt-2">Join us for a premium experience.</p>
       </div>
 
@@ -49,44 +49,44 @@ export default function SignupForm({ onSwitch }: SignupFormProps) {
         {error && <div className="text-red-500 text-center text-sm">{error}</div>}
         
         <div>
-          <label className="block text-sm font-medium text-[#2D241E] mb-2">Full Name</label>
+          <label className="block text-sm font-medium text-[#000000] mb-2">Full Name</label>
           <input 
             type="text" 
             required
             value={formData.full_name}
             onChange={(e) => setFormData({...formData, full_name: e.target.value})}
             placeholder="Jane Doe"
-            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#8B9B86] text-[#2D241E]"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#ee3f5c] text-[#000000]"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#2D241E] mb-2">Email Address</label>
+          <label className="block text-sm font-medium text-[#000000] mb-2">Email Address</label>
           <input 
             type="email" 
             required
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
             placeholder="you@example.com"
-            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#8B9B86] text-[#2D241E]"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#ee3f5c] text-[#000000]"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-[#2D241E] mb-2">Password</label>
+          <label className="block text-sm font-medium text-[#000000] mb-2">Password</label>
           <input 
             type="password" 
             required
             value={formData.password}
             onChange={(e) => setFormData({...formData, password: e.target.value})}
             placeholder="••••••••"
-            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#8B9B86] text-[#2D241E]"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#ee3f5c] text-[#000000]"
           />
         </div>
 
         <button 
           disabled={loading}
-          className="w-full bg-[#2D241E] text-white py-4 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 group disabled:opacity-70"
+          className="w-full bg-[#000000] text-white py-4 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 group disabled:opacity-70"
         >
           {loading ? <Loader2 className="animate-spin" /> : 'Create Account'}
         </button>
@@ -94,7 +94,7 @@ export default function SignupForm({ onSwitch }: SignupFormProps) {
 
       <p className="text-center mt-8 text-stone-500 text-sm">
         Already a member?{' '}
-        <button onClick={onSwitch} className="text-[#2D241E] font-bold hover:underline">
+        <button onClick={onSwitch} className="text-[#000000] font-bold hover:underline">
           Sign In
         </button>
       </p>

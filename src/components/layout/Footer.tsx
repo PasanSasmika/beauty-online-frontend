@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="w-full px-4 md:px-6 py-6 pb-8 bg-[#FAF9F6]">
       
       {/* Main Rounded Container */}
-      <div className="w-full bg-white rounded-[40px] md:rounded-[60px] overflow-hidden shadow-sm border border-[#2D241E]/5 px-6 md:px-20 py-16 md:py-24 relative flex flex-col items-center justify-between">
+      <div className="w-full bg-white rounded-[40px] md:rounded-[60px] overflow-hidden shadow-sm border border-[#000000]/5 px-6 md:px-20 py-16 md:py-24 relative flex flex-col items-center justify-between">
         
         {/* --- 1. Center Content: Large Animated Text --- */}
         <div className="flex flex-col items-center text-center w-full z-10 mb-12">
@@ -22,8 +22,8 @@ export default function Footer() {
             className="text-[12vw] md:text-[10vw]  font-bold leading-none tracking-tighter select-none"
           >
             {/* Gradient Text */}
-            <span className="bg-gradient-to-r from-[#2D241E] via-[#8B9B86] to-[#2D241E] bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-slow">
-              SKINCARE.LK
+            <span className="bg-gradient-to-r from-[#000000] via-[#ee3f5c] to-[#000000] bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-slow">
+              SKINCARES.LK
             </span>
           </motion.h1>
 
@@ -35,7 +35,7 @@ export default function Footer() {
           <div className="flex flex-wrap justify-center gap-4 mt-10">
             <Link 
                href="/products" 
-               className="group flex items-center gap-2 bg-[#2D241E] text-white px-8 py-4 rounded-full font-medium transition-transform hover:scale-105"
+               className="group flex items-center gap-2 bg-[#000000] text-white px-8 py-4 rounded-full font-medium transition-transform hover:scale-105"
             >
               View Products
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:rotate-45" />
@@ -43,7 +43,7 @@ export default function Footer() {
             
             <Link 
                href="/contact" 
-               className="group flex items-center gap-2 bg-stone-100 text-[#2D241E] px-8 py-4 rounded-full font-medium hover:bg-stone-200 transition-transform hover:scale-105"
+               className="group flex items-center gap-2 bg-stone-100 text-[#000000] px-8 py-4 rounded-full font-medium hover:bg-stone-200 transition-transform hover:scale-105"
             >
               Contact Us
             </Link>
@@ -51,11 +51,11 @@ export default function Footer() {
         </div>
 
         {/* --- 2. Contact Details Grid --- */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 py-10 border-t border-stone-100 text-[#2D241E]">
+        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 py-10 border-t border-stone-100 text-[#000000]">
             
             {/* Address */}
             <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2">
-                <div className="flex items-center gap-2 text-[#8B9B86] font-semibold text-sm uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-[#ee3f5c] font-semibold text-sm uppercase tracking-wider">
                     <MapPin size={16} /> Address
                 </div>
                 <p className="text-stone-600">
@@ -65,11 +65,11 @@ export default function Footer() {
 
             {/* Contact Numbers */}
             <div className="flex flex-col items-center text-center gap-2">
-                <div className="flex items-center gap-2 text-[#8B9B86] font-semibold text-sm uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-[#ee3f5c] font-semibold text-sm uppercase tracking-wider">
                     <Phone size={16} /> Contact
                 </div>
                 <div className="text-stone-600 space-y-1">
-                    <p className="flex items-center justify-center gap-2 text-[#2D241E] font-medium">
+                    <p className="flex items-center justify-center gap-2 text-[#000000] font-medium">
                         +94 71 806 0000
                     </p>
                 </div>
@@ -77,10 +77,10 @@ export default function Footer() {
 
             {/* Email */}
             <div className="flex flex-col items-center md:items-end text-center md:text-right gap-2">
-                <div className="flex items-center gap-2 text-[#8B9B86] font-semibold text-sm uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-[#ee3f5c] font-semibold text-sm uppercase tracking-wider">
                     <Mail size={16} /> Email
                 </div>
-                <a href="mailto:beautyonline.lk@gmail.com" className="text-stone-600 hover:text-[#2D241E] transition-colors">
+                <a href="mailto:beautyonline.lk@gmail.com" className="text-stone-600 hover:text-[#000000] transition-colors">
                     beautyonline.lk@gmail.com
                 </a>
             </div>
@@ -105,7 +105,7 @@ export default function Footer() {
       href="https://voguesoftwares.com/" 
       target="_blank" 
       rel="noopener noreferrer" 
-      className="text-[#2D241E] font-bold hover:underline"
+      className="text-[#000000] font-bold hover:underline"
     >
       Vogue Software Solutions (Pvt) Ltd
     </a>

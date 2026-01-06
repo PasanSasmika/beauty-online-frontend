@@ -20,16 +20,16 @@ export default function BrandMarquee() {
       
       {/* --- UPDATED HEADER SECTION WITH TEXT --- */}
       <div className="max-w-4xl mx-auto px-6 md:px-20 text-center mb-16 relative z-10">
-        <span className="text-[#8B9B86] font-bold tracking-[0.2em] text-xs uppercase mb-4 block">
+        <span className="text-[ee3f5c] font-bold tracking-[0.2em] text-xs uppercase mb-4 block">
           Curated Excellence
         </span>
-        <h2 className=" font-medium text-3xl md:text-4xl text-[#2D241E] mb-6">
+        <h2 className=" font-medium text-3xl md:text-4xl text-[#000000] mb-6">
           World-Class Beauty Partners
         </h2>
-        <div className="w-16 h-px bg-[#2D241E]/20 mx-auto mb-6"></div>
+        <div className="w-16 h-px bg-[#000000]/20 mx-auto mb-6"></div>
         <p className="text-stone-500 text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
           We have meticulously selected the most renowned global beauty houses. Every product in our collection is sourced directly from manufacturers, guaranteeing 
-          <strong className="text-[#2D241E] font-medium"> 100% authenticity</strong> and premium quality for your daily ritual.
+          <strong className="text-[#000000] font-medium"> 100% authenticity</strong> and premium quality for your daily ritual.
         </p>
       </div>
 
