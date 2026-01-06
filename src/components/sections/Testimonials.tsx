@@ -11,21 +11,21 @@ const reviews = [
     name: "Saheli Hettiarachchi ",
     location: "Colombo, Sri lanka",
     // avatar: "/images/user1.jpg", // Replace with your actual image paths
-    text: "Absolutely love Skincare.lk! Their skincare products are 100% genuine and really improved my skin’s texture and glow. Fast delivery and amazing prices—highly recommend!"
+    text: "Absolutely love Skincares.lk! Their skincare products are 100% genuine and really improved my skin’s texture and glow. Fast delivery and amazing prices—highly recommend!"
   },
   {
     id: 2,
     name: "Nilakshana Dissanayake",
     location: "Colombo, Sri lanka",
     // avatar: "/images/user2.jpg",
-    text: "I’ve tried several products from Skincare.lk, and each one exceeded my expectations. My skin feels smoother, healthier, and radiant. A must-try for anyone!"
+    text: "I’ve tried several products from Skincares.lk, and each one exceeded my expectations. My skin feels smoother, healthier, and radiant. A must-try for anyone!"
   },
   {
     id: 3,
     name: "Nilmini Karunarathna ",
     location: "Colombo, Sri lanka",
     // avatar: "/images/user3.jpg",
-    text: "Skincare.lk is my go-to for original skincare. The products are top-quality, and the convenience of nationwide delivery makes shopping stress-free. Love it!"
+    text: "Skincares.lk is my go-to for original skincare. The products are top-quality, and the convenience of nationwide delivery makes shopping stress-free. Love it!"
   }
 ];
 

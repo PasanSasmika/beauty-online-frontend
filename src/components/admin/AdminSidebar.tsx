@@ -18,7 +18,7 @@ export default function AdminSidebar() {
         <h2 className="text-2xl font-serif font-bold tracking-tight">
           Admin Panel
         </h2>
-        <p className="text-xs text-[#ee3f5c] mt-1">Skincare.lk Management</p>
+        <p className="text-xs text-[#ee3f5c] mt-1">Skincares.lk Management</p>
       </div>
 
       {/* 2. Navigation Links */}

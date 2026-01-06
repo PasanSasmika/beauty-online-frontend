@@ -46,7 +46,7 @@ export default function Header() {
 )}
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-colors duration-300 ${headerBgClass}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between transition-colors duration-300 ${headerBgClass}`}>
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 z-50">
@@ -57,7 +57,7 @@ export default function Header() {
   <div className="relative w-40 h-24 md:w-60 md:h-20 flex-shrink-0">
     <Image
       src="/skinlogo.png"
-      alt="Skincare.lk Logo"
+      alt="Skincares.lk Logo"
       fill 
       className="object-contain object-left" // Added object-left to keep it anchored if container is wide
       priority
@@ -132,7 +132,7 @@ export default function Header() {
               >
                 <p className="text-lg opacity-70">Contact Us</p>
                 <p className="text-2xl font-medium">+94 71 806 0000</p>
-                <p className="text-2xl font-medium">beautyonline.lk@gmail.com</p>
+                <p className="text-2xl font-medium">skincares.lk@gmail.com</p>
               </motion.div>
             </div>
 
@@ -145,7 +145,7 @@ export default function Header() {
             />
             
             <div className="md:hidden mt-6 text-[#000000] space-y-1">
-               <p className="font-medium">beautyonline.lk@gmail.com</p>
+               <p className="font-medium">skincares.lk@gmail.com</p>
                <p className="opacity-60">+94 71 806 0000</p>
             </div>
 

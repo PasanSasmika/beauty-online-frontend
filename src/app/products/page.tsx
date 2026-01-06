@@ -71,12 +71,12 @@ export default function AllProductsPage() {
     <div className="min-h-screen bg-[#FAF9F6]">
       
       {/* Header */}
-      <div className="bg-[#000000] text-[#FAF9F6] pt-12 pb-24 px-6 md:px-20 relative overflow-hidden">
+      <div className="bg-[#ee3f5c] text-[#FAF9F6] pt-12 pb-24 px-6 md:px-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-[#ee3f5c] hover:text-white mb-6 transition-colors">
              <ArrowLeft size={16} /> Back to Home
           </Link>
-          <h1 className=" text-4xl md:text-5xl font-bold mb-8">Shop Collection</h1>
+          <h1 className=" text-4xl md:text-5xl font-bold mb-8 mt-9">Shop Collection</h1>
           
           <div className="max-w-2xl">
             <div className="relative">

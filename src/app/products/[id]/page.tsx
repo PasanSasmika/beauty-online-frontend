@@ -124,7 +124,7 @@ export default function ProductOverviewPage() {
   const countryCode = product.country ? getCountryCode(product.country) : null;
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] pb-20">
+    <div className="min-h-screen bg-[#FAF9F6] pb-20 mt-12">
       
       {/* Breadcrumb / Back */}
       <div className="max-w-7xl mx-auto px-6 md:px-20 pt-8 pb-4">
@@ -238,8 +238,8 @@ export default function ProductOverviewPage() {
                             onClick={() => { setSelectedVariant(v); setQuantity(1); }}
                             className={`px-6 py-3 rounded-lg border text-sm font-medium transition-all ${
                                 selectedVariant === v 
-                                    ? 'bg-[#000000] text-white border-[#000000] shadow-md' 
-                                    : 'bg-white text-stone-600 border-stone-200 hover:border-[#000000]'
+                                    ? 'bg-[#ee3f5c] text-white border-[#ee3f5c] shadow-md' 
+                                    : 'bg-white text-stone-600 border-stone-200 hover:border-[#ee3f5c]'
                             }`}
                         >
                             {v.size}
@@ -261,7 +261,7 @@ export default function ProductOverviewPage() {
                     {/* Add To Cart */}
                     <button 
                         disabled={selectedVariant.quantity === 0}
-                        className="flex-1 bg-white border-2 border-[#000000] text-[#000000] py-4 rounded-xl font-bold hover:bg-stone-50 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                        className="flex-1 bg-white border-2 border-[#ee3f5c] text-[#000000] py-4 rounded-xl font-bold hover:bg-stone-50 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                     >
                         <ShoppingBag size={20} />
                         Add to Cart
@@ -271,7 +271,7 @@ export default function ProductOverviewPage() {
                 {/* BUY IT NOW (Full Width) */}
                 <button 
                     disabled={selectedVariant.quantity === 0}
-                    className="w-full bg-[#000000] text-white py-4 rounded-xl font-bold hover:bg-stone-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-70"
+                    className="w-full bg-[#ee3f5c] text-white py-4 rounded-xl font-bold hover:bg-[#e01f3f] transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-70"
                 >
                     <Zap size={20} fill="currentColor" />
                     Buy It Now
