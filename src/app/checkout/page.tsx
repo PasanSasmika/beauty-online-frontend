@@ -1,24 +1,30 @@
 'use client';
 
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, ArrowLeft, Truck, Banknote } from 'lucide-react';
+import { Loader2, CheckCircle, Truck, Banknote } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   
   // --- CONFIG: Shipping Cost ---
   const SHIPPING_COST = 500;
   
-  // Form State
+  // Form State (Removed postalCode)
   const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', phone: '',
-    address: '', city: '', postalCode: ''
+    firstName: user?.full_name.split(' ')[0] || '',
+    lastName: user?.full_name.split(' ')[1] || '',
+    email: user?.email || '',
+    phone: '',
+    address: '', 
+    city: ''
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,14 +40,15 @@ export default function CheckoutPage() {
     try {
       // 1. Prepare Order Payload
       const orderData = {
+        userId: user ? user.id : null,
         customer: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          email: formData.email,
+          email: formData.email, // Optional: might be empty string
           phone: formData.phone,
           address: formData.address,
           city: formData.city,
-          postalCode: formData.postalCode,
+          // postalCode removed
         },
         items: cart.map(item => ({
           product_id: item.id, 
@@ -53,11 +60,11 @@ export default function CheckoutPage() {
         })),
         total_amount: totalAmount,
         shipping_cost: SHIPPING_COST,
-        payment_method: 'cod' // Hardcoded for now
+        payment_method: 'cod'
       };
 
       // 2. Send to Backend
-      const res = await fetch('http://localhost:5000/api/orders', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +83,7 @@ export default function CheckoutPage() {
       setLoading(false);
       clearCart();
       alert(`Order Placed Successfully! Order ID: #${data.orderId.slice(-6)}`);
-      router.push('/'); // Redirect home
+      router.push('/'); 
 
     } catch (error: any) {
       console.error(error);
@@ -106,21 +113,20 @@ export default function CheckoutPage() {
                 <h3 className="font-bold text-lg text-[#2D241E]">Shipping Information</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
-                    <input required name="firstName" onChange={handleInputChange} placeholder="First Name" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
-                    <input required name="lastName" onChange={handleInputChange} placeholder="Last Name" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
+                    <input required name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="First Name" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
+                    <input required name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Last Name" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
-                    <input required name="email" type="email" onChange={handleInputChange} placeholder="Email" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
+                    {/* Email is NOT required now */}
+                    <input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="Email (Optional)" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
                     <input required name="phone" type="tel" onChange={handleInputChange} placeholder="Phone Number" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
                 </div>
 
                 <input required name="address" onChange={handleInputChange} placeholder="Street Address" className="w-full p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
                 
-                <div className="grid grid-cols-2 gap-4">
-                    <input required name="city" onChange={handleInputChange} placeholder="City" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
-                    <input required name="postalCode" onChange={handleInputChange} placeholder="Postal Code" className="p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
-                </div>
+                {/* City is full width now since postal code is gone */}
+                <input required name="city" onChange={handleInputChange} placeholder="City" className="w-full p-4 bg-stone-50 rounded-xl outline-none focus:ring-2 focus:ring-[#ee3f5c]" />
 
                 {/* Payment Method */}
                 <div className="pt-6">
@@ -151,7 +157,6 @@ export default function CheckoutPage() {
                     {cart.map((item) => (
                         <div key={item.variantId} className="flex gap-4">
                             <div className="relative w-16 h-16 bg-stone-50 rounded-lg overflow-hidden shrink-0 border border-stone-100">
-                                {/* Fixed Image Loading */}
                                 <Image 
                                     src={item.image} 
                                     alt={item.name} 
