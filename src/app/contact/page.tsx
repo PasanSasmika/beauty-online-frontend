@@ -97,7 +97,7 @@ export default function ContactPage() {
             
             {/* CHANGED: Button converted to Link */}
             <a 
-              href="https://wa.me/94719533118?text=Hi%20Skincares.lk%2C%20I%20need%20assistance"
+              href="https://wa.me/94789086776?text=Hi%20Skincares.lk%2C%20I%20need%20assistance"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block text-sm font-bold uppercase tracking-wider border-b border-white/30 pb-1 hover:text-white hover:border-white transition-colors"
