@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, UserCircle, ShoppingBag, User } from 'lucide-react'; // Added User icon
+import { Menu, X, UserCircle, ShoppingBag, User } from 'lucide-react'; 
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext'; 
-import { useAuth } from '@/context/AuthContext'; // <--- Import Auth Hook
+import { useAuth } from '@/context/AuthContext'; 
 
 // Auth Components
 import LoginForm from '@/components/auth/LoginForm';
@@ -24,7 +24,7 @@ export default function Header() {
   
   // Contexts
   const { toggleCart, cart } = useCart();
-  const { user } = useAuth(); // <--- Get current user state
+  const { user } = useAuth(); 
 
   // Auth State
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -48,7 +48,8 @@ export default function Header() {
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 z-50">
-          <div className="relative w-40 h-24 md:w-60 md:h-20 flex-shrink-0">
+          {/* UPDATED HEIGHT: w-40 h-16 md:w-60 md:h-20 */}
+          <div className="relative w-40 h-16 md:w-60 md:h-20 flex-shrink-0">
             <Image
               src="/skinlogo.png"
               alt="Skincares.lk Logo"
@@ -84,7 +85,6 @@ export default function Header() {
               className="text-[#000000] hover:text-[#ee3f5c] transition-colors flex items-center justify-center"
               title="My Profile"
             >
-              {/* Solid User Icon for Logged In state */}
               <div className="bg-[#000000] text-white p-1 rounded-full hover:bg-[#ee3f5c] transition-colors">
                  <User size={20} />
               </div>
@@ -152,8 +152,8 @@ export default function Header() {
                 className="hidden md:block text-right space-y-2 text-[#000000]"
               >
                 <p className="text-lg opacity-70">Contact Us</p>
-                <p className="text-2xl font-medium">+94 71 806 0000</p>
-                <p className="text-2xl font-medium">skincares.lk@gmail.com</p>
+                <p className="text-2xl font-medium">+94 71 953 3118</p>
+                <p className="text-2xl font-medium">info@skincares.lk</p>
               </motion.div>
             </div>
 
@@ -165,8 +165,8 @@ export default function Header() {
             />
             
             <div className="md:hidden mt-6 text-[#000000] space-y-1">
-               <p className="font-medium">skincares.lk@gmail.com</p>
-               <p className="opacity-60">+94 71 806 0000</p>
+               <p className="font-medium">info@skincares.lk</p>
+               <p className="opacity-60">+94 71 953 3118</p>
             </div>
 
           </motion.div>

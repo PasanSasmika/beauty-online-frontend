@@ -307,7 +307,7 @@ export default function ProductOverviewPage() {
                     className="w-full bg-[#ee3f5c] text-white py-4 rounded-xl font-bold hover:bg-[#e01f3f] transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-70"
                 >
                     <Zap size={20} fill="currentColor" />
-                    Buy It Now
+                    Buy Now
                 </button>
             </div>
 

@@ -59,7 +59,7 @@ export default function Footer() {
                     <MapPin size={16} /> Address
                 </div>
                 <p className="text-stone-600">
-                    Colombo, Sri Lanka
+                    Malabe, Colombo, Sri Lanka
                 </p>
             </div>
 
@@ -70,7 +70,7 @@ export default function Footer() {
                 </div>
                 <div className="text-stone-600 space-y-1">
                     <p className="flex items-center justify-center gap-2 text-[#000000] font-medium">
-                        +94 71 806 0000
+                       +94 71 953 3118
                     </p>
                 </div>
             </div>
@@ -80,8 +80,8 @@ export default function Footer() {
                 <div className="flex items-center gap-2 text-[#ee3f5c] font-semibold text-sm uppercase tracking-wider">
                     <Mail size={16} /> Email
                 </div>
-                <a href="mailto:skincares.lk@gmail.com" className="text-stone-600 hover:text-[#000000] transition-colors">
-                    skincares.lk@gmail.com
+                <a href="mailto:info@skincares.lk" className="text-stone-600 hover:text-[#000000] transition-colors">
+                    info@skincares.lk
                 </a>
             </div>
         </div>

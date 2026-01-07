@@ -43,7 +43,7 @@ export default function ContactPage() {
               <ContactItem 
                 icon={<Phone size={24} />} 
                 label="Call Us" 
-                value="+94 71 806 0000" 
+                value="+94 71 953 3118" 
                 sub="Mon-Fri from 8am to 5pm"
               />
               <div className="w-full h-px bg-[#ee3f5c]" />
@@ -57,7 +57,7 @@ export default function ContactPage() {
               <ContactItem 
                 icon={<MapPin size={24} />} 
                 label="Visit Us" 
-                value="Colombo, Sri Lanka" 
+                value="Malabe, Colombo, Sri Lanka" 
                 sub="Online Store HQ"
               />
             </div>
