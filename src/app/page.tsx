@@ -3,7 +3,6 @@
 import { motion, useScroll, useSpring } from "framer-motion";
 import Hero from "@/components/sections/Hero";
 import Features from "@/components/sections/Features";
-import Contact from "@/components/sections/Contact";
 import Testimonials from "@/components/sections/Testimonials";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
 import Footer from "@/components/layout/Footer";
@@ -28,7 +27,6 @@ export default function Home() {
 
       <Hero />
       <Features />
-      <Contact />
       <Testimonials/>
       <BrandMarquee/>
       <WhyChooseUs/>
