@@ -94,9 +94,17 @@ export default function ContactPage() {
           <div className="p-8 bg-[#ee3f5c] rounded-[2rem] text-[#FAF9F6] text-center md:text-left">
             <h4 className="text-xl font-bold mb-2">Need immediate assistance?</h4>
             <p className="text-[#EBE5D9]/80 text-sm mb-4">Chat with our support team directly via WhatsApp for faster responses.</p>
-            <button className="text-sm font-bold uppercase tracking-wider border-b border-white/30 pb-1 hover:text-white hover:border-white transition-colors">
+            
+            {/* CHANGED: Button converted to Link */}
+            <a 
+              href="https://wa.me/94719533118?text=Hi%20Skincares.lk%2C%20I%20need%20assistance"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block text-sm font-bold uppercase tracking-wider border-b border-white/30 pb-1 hover:text-white hover:border-white transition-colors"
+            >
               Chat on WhatsApp &rarr;
-            </button>
+            </a>
+            
           </div>
         </div>
 
