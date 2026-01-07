@@ -2,18 +2,45 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, Loader2, Plus, Minus } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader2, Plus } from 'lucide-react';
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate email sending
-    await new Promise(r => setTimeout(r, 2000));
-    setLoading(false);
-    alert("Message sent! We'll get back to you shortly.");
+
+    // 1. Capture Form Data
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      subject: formData.get('subject'),
+      message: formData.get('message'),
+    };
+
+    try {
+      // 2. Send to Backend
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert("Message sent! We'll get back to you shortly.");
+        (e.target as HTMLFormElement).reset(); // Clear form
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to send message');
+      }
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,7 +51,7 @@ export default function ContactPage() {
         <span className="text-[#ee3f5c] font-bold tracking-[0.2em] text-xs uppercase mb-4 block">
           Get In Touch
         </span>
-        <h1 className="text-5xl md:text-6xl  font-bold text-[#2D241E] mb-6">
+        <h1 className="text-5xl md:text-6xl font-bold text-[#2D241E] mb-6">
           We're here to help.
         </h1>
         <p className="text-lg text-stone-500 leading-relaxed">
@@ -37,7 +64,7 @@ export default function ContactPage() {
         {/* 2. LEFT: CONTACT DETAILS (Sticky) */}
         <div className="lg:col-span-5 space-y-8">
           <div className="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-stone-100">
-            <h3 className="text-2xl  font-bold text-[#ee3f5c] mb-8">Contact Information</h3>
+            <h3 className="text-2xl font-bold text-[#ee3f5c] mb-8">Contact Information</h3>
             
             <div className="space-y-8">
               <ContactItem 
@@ -82,21 +109,25 @@ export default function ContactPage() {
         >
           <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-lg border border-stone-100">
             <h3 className="text-2xl font-bold text-[#ee3f5c] mb-8">Send a Message</h3>
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-[#2D241E] uppercase tracking-wider">Name</label>
-                  <input required placeholder="Jane Doe" className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] focus:border-transparent outline-none transition-all placeholder-stone-400" />
+                  {/* Added name="name" */}
+                  <input required name="name" placeholder="Jane Doe" className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] focus:border-transparent outline-none transition-all placeholder-stone-400" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-[#2D241E] uppercase tracking-wider">Email</label>
-                  <input required type="email" placeholder="jane@example.com" className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] focus:border-transparent outline-none transition-all placeholder-stone-400" />
+                  {/* Added name="email" */}
+                  <input required name="email" type="email" placeholder="jane@example.com" className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] focus:border-transparent outline-none transition-all placeholder-stone-400" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#2D241E] uppercase tracking-wider">Subject</label>
-                <select className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] outline-none transition-all text-stone-600 appearance-none">
+                {/* Added name="subject" */}
+                <select name="subject" className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] outline-none transition-all text-stone-600 appearance-none">
                   <option>Order Inquiry</option>
                   <option>Product Question</option>
                   <option>Collaboration</option>
@@ -106,7 +137,8 @@ export default function ContactPage() {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#2D241E] uppercase tracking-wider">Message</label>
-                <textarea required rows={6} placeholder="How can we help you?" className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] outline-none transition-all resize-none placeholder-stone-400"></textarea>
+                {/* Added name="message" */}
+                <textarea required name="message" rows={6} placeholder="How can we help you?" className="w-full p-4 bg-[#FAF9F6] border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2D241E] outline-none transition-all resize-none placeholder-stone-400"></textarea>
               </div>
 
               <button 
@@ -125,7 +157,7 @@ export default function ContactPage() {
       {/* 4. LARGE FAQ SECTION */}
       <div className="max-w-4xl mx-auto border-t border-stone-200 pt-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl  font-bold text-[#2D241E]">Frequently Asked Questions</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#2D241E]">Frequently Asked Questions</h2>
         </div>
         
         <div className="space-y-4">
