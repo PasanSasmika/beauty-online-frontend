@@ -10,6 +10,7 @@ import Preloader from "@/components/ui/Prloader";
 import { CartProvider } from "@/context/CartContext";
 import CartSidebar from "@/components/cart/CartSidebar";
 import { AuthProvider } from "@/context/AuthContext";
+// import SplashCursor from "@/components/SplashCursor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +43,6 @@ export default function RootLayout({
           <Preloader/>
           <Header />
           <CustomCursor />
-          
           {/* MOVED INSIDE THE PROVIDER */}
           {children}
 

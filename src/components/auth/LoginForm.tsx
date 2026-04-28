@@ -114,6 +114,9 @@ export default function LoginForm({ onSwitch, onClose }: LoginFormProps) {
             </>
           )}
         </button>
+        <div>
+          <h2>admin@gmail.com / password123</h2>
+        </div>
       </form>
 
       <p className="text-center mt-8 text-stone-500 text-sm">
