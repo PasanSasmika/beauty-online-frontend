@@ -17,7 +17,6 @@ const navLinks = [
   { title: "Products", href: "/products" },
   { title: "About Us", href: "/about" },
   { title: "Contact", href: "/contact" },
-  { title: "Track My Order", href: "/track-order" },
 ];
 
 export default function Header() {
@@ -59,16 +58,19 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between h-16 md:h-20">
 
           {/* LOGO */}
-          <Link href="/" className="relative w-36 h-12 md:w-48 md:h-16 shrink-0">
-            <Image
-              src="/skinlogo.png"
-              alt="Skincares.lk"
-              fill
-              className="object-contain object-left"
-              priority
-              unoptimized
-            />
-          </Link>
+          <Link 
+  href="/" 
+  className="relative w-56 h-16 md:w-96 md:h-36 shrink-0 transition-transform hover:scale-[1.02]"
+>
+  <Image
+    src="/skinlogo.png"
+    alt="Skincares.lk"
+    fill
+    className="object-contain object-left"
+    priority
+    unoptimized
+  />
+</Link>
 
           {/* DESKTOP NAV LINKS */}
           <nav className="hidden md:flex items-center gap-1">
