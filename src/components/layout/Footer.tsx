@@ -92,7 +92,7 @@ export default function Footer() {
           
           {/* Social Icons (Only Facebook) */}
           <div className="flex gap-4">
-            <a href="https://www.facebook.com/p/Beauty-Online-61578582267460/" target="_blank" className="p-3 bg-[#1877F2] text-white rounded-full hover:opacity-90 transition-opacity">
+            <a href="https://web.facebook.com/profile.php?id=100075450033435" target="_blank" className="p-3 bg-[#1877F2] text-white rounded-full hover:opacity-90 transition-opacity">
               <Facebook size={20} fill="currentColor" strokeWidth={0} />
             </a>
           </div>
