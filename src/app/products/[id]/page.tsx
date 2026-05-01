@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // Added useRouter
 import Image from 'next/image';
 import Link from 'next/link';
-import { Loader2, Minus, Plus, ShoppingBag, Star, Truck, ShieldCheck, ArrowLeft, Zap } from 'lucide-react';
+import { Loader2, Minus, Plus, ShoppingBag, Star, Truck, ShieldCheck, ArrowLeft,Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext'; // Import Cart Hook
 
 // --- INTERFACES ---
@@ -324,7 +324,7 @@ export default function ProductOverviewPage() {
                     disabled={selectedVariant.quantity === 0}
                     className="w-full bg-[#ee3f5c] text-white py-4 rounded-xl font-bold hover:bg-[#e01f3f] transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-70"
                 >
-                    <Zap size={20} fill="currentColor" />
+                    <Sparkles size={20} fill="currentColor" />
                     Buy Now
                 </button>
             </div>

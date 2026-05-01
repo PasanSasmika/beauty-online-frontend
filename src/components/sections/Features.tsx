@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ShoppingBag, Loader2, Zap } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 
@@ -254,7 +254,7 @@ function ProductCard({ product }: { product: Product }) {
                 onClick={handleBuyNow}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-[#ee3f5c] text-white py-2.5 rounded-xl text-sm font-bold hover:bg-[#e01f3f] transition-colors shadow-md"
               >
-                <Zap size={15} fill="currentColor" />
+                <Sparkles size={15} fill="currentColor" />
                 Buy Now
               </button>
             </div>
