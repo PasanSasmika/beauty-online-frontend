@@ -20,6 +20,7 @@ interface Product {
   name: string;
   brand: string;
   description: string;
+  howToUse?: string;
   category: string;
   country: string; 
   images: string; 
@@ -252,9 +253,26 @@ export default function ProductOverviewPage() {
             </div>
 
             {/* Description */}
-            <p className="text-stone-600 leading-relaxed mb-8">
-                {product.description || "Experience premium quality with our meticulously crafted formula. Designed to enhance your natural beauty."}
-            </p>
+{product.description && (
+  <div className="mb-8">
+    <h3 className="font-semibold text-[#2D241E] mb-3">Description</h3>
+    <p className="text-stone-600 leading-relaxed">
+      {product.description}
+    </p>
+  </div>
+)}
+
+{/* How to Use */}
+{product.howToUse && (
+  <div className="mb-10">
+    <h3 className="font-semibold text-[#2D241E] mb-3 flex items-center gap-2">
+      <span>How to Use</span>
+    </h3>
+    <div className="bg-white p-6 rounded-2xl border border-stone-100 text-stone-700 leading-relaxed">
+      {product.howToUse}
+    </div>
+  </div>
+)}
 
             {/* Variant Selector */}
             <div className="mb-8">

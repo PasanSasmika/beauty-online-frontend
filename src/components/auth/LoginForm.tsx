@@ -116,6 +116,7 @@ export default function LoginForm({ onSwitch, onClose }: LoginFormProps) {
         </button>
         <div>
           <h2>admin@gmail.com / password123</h2>
+          <h2>pasansasmika1@gmail.com / 123</h2>
         </div>
       </form>
 

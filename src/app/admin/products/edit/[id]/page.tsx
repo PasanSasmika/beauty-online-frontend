@@ -21,6 +21,7 @@ interface ProductFormData {
   category: string;
   country: string;
   description: string;
+  howToUse: string;
   is_koko_enabled: boolean;
   variants: Variant[];
 }
@@ -98,6 +99,7 @@ export default function EditProductPage() {
             category: dbData.category || '',
             country: dbData.country || '',
             description: dbData.description || '',
+            howToUse: dbData.howToUse || '',
             is_koko_enabled: (dbData.is_koko_enabled === 1 || dbData.is_koko_enabled === true),
             variants: parsedVariants // reset() sets the form data
         });
@@ -129,6 +131,7 @@ export default function EditProductPage() {
       formData.append('category', data.category);
       if (data.country) formData.append('country', data.country);
       if (data.description) formData.append('description', data.description);
+      if (data.howToUse) formData.append('howToUse', data.howToUse);
       formData.append('is_koko_enabled', data.is_koko_enabled ? 'true' : 'false');
       
       // Send variants as JSON string
@@ -212,6 +215,15 @@ export default function EditProductPage() {
                 <label className="block text-sm font-semibold text-stone-600 mb-2">Description</label>
                 <textarea {...register("description")} rows={4} className="w-full p-3 border border-stone-300 rounded-lg outline-none" />
             </div>
+            <div>
+  <label className="block text-sm font-semibold text-stone-600 mb-2">How to Use</label>
+  <textarea 
+    {...register("howToUse")} 
+    rows={5} 
+    className="w-full p-3 border border-stone-300 rounded-lg outline-none"
+    placeholder="How should the customer use this product..."
+  />
+</div>
         </div>
 
         {/* VARIANTS SECTION */}

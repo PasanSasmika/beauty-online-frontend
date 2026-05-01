@@ -14,6 +14,7 @@ const productSchema = z.object({
   category: z.string().min(1, "Category is required"),
   country: z.string().optional(),
   description: z.string().optional(),
+  howToUse: z.string().optional(),
   is_koko_enabled: z.boolean().default(false),
   
   variants: z.array(z.object({
@@ -100,6 +101,7 @@ export default function AddProductPage() {
       if (data.country) formData.append('country', data.country);
       if (data.description) formData.append('description', data.description || "");
       formData.append('is_koko_enabled', data.is_koko_enabled ? 'true' : 'false');
+      if (data.howToUse) formData.append('howToUse', data.howToUse);
       formData.append('variants', JSON.stringify(data.variants));
 
       if (data.images && data.images.length > 0) {
@@ -185,9 +187,26 @@ export default function AddProductPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600">Description</label>
-            <textarea {...register("description")} rows={3} className="w-full p-3 border rounded-lg outline-none" placeholder="Product details..." />
-          </div>
+  <label className="text-sm font-medium text-stone-600">Description</label>
+  <textarea 
+    {...register("description")} 
+    rows={3} 
+    className="w-full p-3 border rounded-lg outline-none" 
+    placeholder="Product details..." 
+  />
+</div>
+
+{/* How to Use - NEW */}
+<div className="space-y-2">
+  <label className="text-sm font-medium text-stone-600">How to Use</label>
+  <textarea 
+    {...register("howToUse")} 
+    rows={4} 
+    className="w-full p-3 border rounded-lg outline-none" 
+    placeholder="Apply a small amount on clean skin and gently massage until absorbed. Use twice daily for best results..."
+  />
+  <p className="text-xs text-stone-500">Instructions on how to use this product (will be shown below description)</p>
+</div>
         </div>
 
         {/* 2. VARIANTS */}

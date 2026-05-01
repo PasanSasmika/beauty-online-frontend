@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, ArrowLeft, Search, X, ShoppingBag, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
@@ -18,35 +18,35 @@ interface Product {
 }
 
 export default function AllProductsPage() {
+  const searchParams = useSearchParams();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // NEW: Dynamic Categories State
   const [categories, setCategories] = useState<{id: string, label: string}[]>([]);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // ✅ Initialize from URL params so Hero search works
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
 
   // 1. Fetch Categories
   useEffect(() => {
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
-    .then(res => {
-      if (!res.ok) throw new Error('Failed to fetch categories');
-      return res.json();
-    })
-    .then(data => {
-      const formatted = data.map((c: any) => ({
-        id: c.name.toLowerCase(),
-        label: c.name
-      }));
-
-      setCategories([
-        { id: 'all', label: 'All Products' },
-        ...formatted
-      ]);
-    })
-    .catch(e => console.error('Error fetching categories:', e));
-}, []);
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        return res.json();
+      })
+      .then(data => {
+        const formatted = data.map((c: any) => ({
+          id: c.name.toLowerCase(),
+          label: c.name
+        }));
+        setCategories([
+          { id: 'all', label: 'All Products' },
+          ...formatted
+        ]);
+      })
+      .catch(e => console.error('Error fetching categories:', e));
+  }, []);
 
   // 2. Fetch Products
   const fetchProducts = useCallback(async () => {
@@ -83,7 +83,7 @@ export default function AllProductsPage() {
           <Link href="/" className="inline-flex items-center gap-2 text-[#ee3f5c] hover:text-white mb-6 transition-colors">
              <ArrowLeft size={16} /> Back to Home
           </Link>
-          <h1 className=" text-4xl md:text-5xl font-bold mb-8 mt-9">Shop Collection</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-8 mt-9">Shop Collection</h1>
           
           <div className="max-w-2xl">
             <div className="relative">
@@ -164,9 +164,8 @@ export default function AllProductsPage() {
   );
 }
 
-// Helper Card Component
 function ProductCard({ product }: { product: Product }) {
-  const { addToCart } = useCart();
+  const { addToCart, addToCartSilent } = useCart();
   const router = useRouter();
 
   let imageUrl = '/logo.png'; 
@@ -178,9 +177,9 @@ function ProductCard({ product }: { product: Product }) {
         } catch (e) {}
     }
     if (Array.isArray(imageData) && imageData.length > 0) {
-    imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${imageData[0]}`;
+      imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${imageData[0]}`;
     } else if (typeof imageData === 'string' && imageData.startsWith('/')) {
-    imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${imageData}`;
+      imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${imageData}`;
     }
   } catch (e) { console.error(e); }
 
@@ -219,7 +218,7 @@ function ProductCard({ product }: { product: Product }) {
     e.preventDefault();
     e.stopPropagation();
     if (!firstVariant) return;
-    addToCart({
+    addToCartSilent({
       id: product.id,
       name: product.name,
       price: displayPrice,
@@ -232,66 +231,65 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <Link href={`/products/${product.id}`} className="block">
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-      className="group relative bg-white rounded-2xl overflow-hidden shadow-sm border border-[#000000]/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-    >
-      <div className="relative aspect-[3/4] bg-stone-100 overflow-hidden">
-        <Image
-          src={imageUrl}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-          unoptimized={true} 
-        />
-        {discount > 0 && (
-          <span className="absolute top-3 left-3 bg-[#E11D48] text-white text-xs font-bold px-3 py-1 rounded-full z-10">
-            -{discount}%
-          </span>
-        )}
-      </div>
-      <div className="p-5">
-         <p className="text-xs text-stone-500 uppercase font-bold tracking-wider mb-1">{product.brand}</p>
-         <h3 className="text-lg text-[#000000] truncate mb-2">{product.name}</h3>
-         {firstVariant && (
-            <span className="inline-block text-[10px] uppercase bg-stone-100 px-2 py-1 rounded text-stone-600 font-medium mb-3">
-               {firstVariant.size}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="group relative bg-white rounded-2xl overflow-hidden shadow-sm border border-[#000000]/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+      >
+        <div className="relative aspect-[3/4] bg-stone-100 overflow-hidden">
+          <Image
+            src={imageUrl}
+            alt={product.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-700"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            unoptimized={true} 
+          />
+          {discount > 0 && (
+            <span className="absolute top-3 left-3 bg-[#E11D48] text-white text-xs font-bold px-3 py-1 rounded-full z-10">
+              -{discount}%
             </span>
-         )}
-         <div className="flex items-center gap-3 mb-4">
-           <span className="font-bold text-[#000000] text-lg">
-             LKR {(displayPrice || 0).toLocaleString()}
-           </span>
-           {displayOriginalPrice > 0 && (
-             <span className="text-sm text-stone-400 line-through">
-               LKR {displayOriginalPrice.toLocaleString()}
-             </span>
-           )}
-         </div>
+          )}
+        </div>
+        <div className="p-5">
+          <p className="text-xs text-stone-500 uppercase font-bold tracking-wider mb-1">{product.brand}</p>
+          <h3 className="text-lg text-[#000000] truncate mb-2">{product.name}</h3>
+          {firstVariant && (
+            <span className="inline-block text-[10px] uppercase bg-stone-100 px-2 py-1 rounded text-stone-600 font-medium mb-3">
+              {firstVariant.size}
+            </span>
+          )}
+          <div className="flex items-center gap-3 mb-4">
+            <span className="font-bold text-[#000000] text-lg">
+              LKR {(displayPrice || 0).toLocaleString()}
+            </span>
+            {displayOriginalPrice > 0 && (
+              <span className="text-sm text-stone-400 line-through">
+                LKR {displayOriginalPrice.toLocaleString()}
+              </span>
+            )}
+          </div>
 
-         {/* Action Buttons — always visible */}
-         <div className="flex gap-2">
-           <button
-             onClick={handleAddToCart}
-             className="flex-1 flex items-center justify-center gap-1.5 bg-white border-2 border-[#000000] text-[#000000] py-2.5 rounded-xl text-sm font-bold hover:bg-[#000000] hover:text-white transition-colors"
-           >
-             <ShoppingBag size={15} />
-             Add
-           </button>
-           <button
-             onClick={handleBuyNow}
-             className="flex-1 flex items-center justify-center gap-1.5 bg-[#ee3f5c] text-white py-2.5 rounded-xl text-sm font-bold hover:bg-[#e01f3f] transition-colors shadow-md"
-           >
-             <Zap size={15} fill="currentColor" />
-             Buy Now
-           </button>
-         </div>
-       </div>
-    </motion.div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-white border-2 border-[#000000] text-[#000000] py-2.5 rounded-xl text-sm font-bold hover:bg-[#000000] hover:text-white transition-colors"
+            >
+              <ShoppingBag size={15} />
+              Add
+            </button>
+            <button
+              onClick={handleBuyNow}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-[#ee3f5c] text-white py-2.5 rounded-xl text-sm font-bold hover:bg-[#e01f3f] transition-colors shadow-md"
+            >
+              <Zap size={15} fill="currentColor" />
+              Buy Now
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </Link>
   );
 }
