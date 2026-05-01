@@ -60,7 +60,7 @@ export default function Header() {
           {/* LOGO */}
           <Link 
   href="/" 
-  className="relative w-56 h-16 md:w-96 md:h-36 shrink-0 transition-transform hover:scale-[1.02]"
+  className="relative w-46 h-16 md:w-96 md:h-36 shrink-0 transition-transform hover:scale-[1.02]"
 >
   <Image
     src="/skinlogo.png"
