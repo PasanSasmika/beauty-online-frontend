@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, Loader2, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ export default function ContactPage() {
       });
 
       if (res.ok) {
-        alert("Message sent! We'll get back to you shortly.");
+        toast.success("Message sent! We'll get back to you shortly.");
         (e.target as HTMLFormElement).reset(); // Clear form
       } else {
         const errorData = await res.json();
@@ -37,7 +38,7 @@ export default function ContactPage() {
       }
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Something went wrong. Please try again.");
+      toast.error(error.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

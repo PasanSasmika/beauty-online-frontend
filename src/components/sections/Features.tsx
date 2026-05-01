@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag, Loader2, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, ShoppingBag, Loader2, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 // --- INTERFACES ---
 interface Product {
@@ -91,46 +93,47 @@ export default function Features() {
 
 // --- UPDATED PRODUCT CARD ---
 function ProductCard({ product }: { product: Product }) {
-  
+  const { addToCart } = useCart();
+  const router = useRouter();
+
   // 1. Image Parsing Logic (Get First & Second Image)
-  let images: string[] = ['/logo.png']; // Default fallback
+  let images: string[] = ['/logo.png'];
   
   try {
     let rawImages = product.images;
     if (typeof rawImages === 'string') {
-        try {
-            if (rawImages.startsWith('[')) {
-                rawImages = JSON.parse(rawImages);
-            }
-        } catch (e) {}
+      try {
+        if (rawImages.startsWith('[')) {
+          rawImages = JSON.parse(rawImages);
+        }
+      } catch (e) {}
     }
 
     if (Array.isArray(rawImages) && rawImages.length > 0) {
-  // Map to full URLs using env variable
-  images = rawImages.map(img => `${process.env.NEXT_PUBLIC_API_URL}${img}`);
-} else if (typeof rawImages === 'string' && rawImages.startsWith('/')) {
-  images = [`${process.env.NEXT_PUBLIC_API_URL}${rawImages}`];
-}
+      images = rawImages.map(img => `${process.env.NEXT_PUBLIC_API_URL}${img}`);
+    } else if (typeof rawImages === 'string' && rawImages.startsWith('/')) {
+      images = [`${process.env.NEXT_PUBLIC_API_URL}${rawImages}`];
+    }
   } catch (e) {
     console.error("Image logic error", e);
   }
 
   const primaryImage = images[0];
-  const hoverImage = images.length > 1 ? images[1] : images[0]; // Use 2nd image on hover, or keep 1st
+  const hoverImage = images.length > 1 ? images[1] : images[0];
 
   // 2. Price / Variant Logic
   let firstVariant = null;
   let displayPrice = 0;
   let displayOriginalPrice = 0;
   try {
-     const v = product.variants; 
-     const variantsArray = typeof v === 'string' ? JSON.parse(v) : v;
-     
-     if (Array.isArray(variantsArray) && variantsArray.length > 0) {
-        firstVariant = variantsArray[0];
-        displayPrice = parseFloat(firstVariant.price);
-        displayOriginalPrice = firstVariant.original_price ? parseFloat(firstVariant.original_price) : 0;
-     }
+    const v = product.variants;
+    const variantsArray = typeof v === 'string' ? JSON.parse(v) : v;
+    
+    if (Array.isArray(variantsArray) && variantsArray.length > 0) {
+      firstVariant = variantsArray[0];
+      displayPrice = parseFloat(firstVariant.price);
+      displayOriginalPrice = firstVariant.original_price ? parseFloat(firstVariant.original_price) : 0;
+    }
   } catch (e) { console.error(e); }
 
   const discount = displayOriginalPrice > 0
@@ -139,9 +142,38 @@ function ProductCard({ product }: { product: Product }) {
 
   // 3. Add to Cart Handler
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Stop link navigation
-    e.stopPropagation(); 
-    alert(`Added ${product.name} to cart!`); // Replace with your Cart Context logic later
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!firstVariant) return;
+
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: displayPrice,
+      size: firstVariant.size,
+      image: primaryImage,
+      quantity: 1,
+    });
+  };
+
+  // 4. Buy Now Handler
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!firstVariant) return;
+
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: displayPrice,
+      size: firstVariant.size,
+      image: primaryImage,
+      quantity: 1,
+    });
+
+    router.push('/checkout');
   };
 
   return (
@@ -154,10 +186,10 @@ function ProductCard({ product }: { product: Product }) {
         className="group relative bg-white rounded-2xl overflow-hidden shadow-sm border border-[#000000]/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col"
       >
         
-        {/* --- IMAGE CONTAINER --- */}
+        {/* IMAGE CONTAINER */}
         <div className="relative aspect-[3/4] bg-stone-100 overflow-hidden">
           
-          {/* Primary Image (Visible by default) */}
+          {/* Primary Image */}
           <Image
             src={primaryImage}
             alt={product.name}
@@ -167,7 +199,7 @@ function ProductCard({ product }: { product: Product }) {
             unoptimized={true} 
           />
 
-          {/* Secondary Image (Visible on Hover) */}
+          {/* Hover Image */}
           <Image
             src={hoverImage}
             alt={`${product.name} alternate`}
@@ -183,42 +215,51 @@ function ProductCard({ product }: { product: Product }) {
               -{discount}%
             </span>
           )}
-
-          {/* --- ADD TO CART BUTTON (Slide Up) --- */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-20">
-            <button 
-              onClick={handleAddToCart}
-              className="w-full bg-white/90 backdrop-blur-sm text-[#000000] py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-[#000000] hover:text-white transition-colors"
-            >
-              <ShoppingBag size={18} />
-              Add to Cart
-            </button>
-          </div>
         </div>
 
-        {/* --- DETAILS --- */}
+        {/* DETAILS */}
         <div className="p-5 flex flex-col flex-1">
-           <p className="text-xs text-stone-500 uppercase font-bold tracking-wider mb-1">{product.brand}</p>
-           <h3 className="text-lg text-[#000000] font-medium leading-tight mb-2 line-clamp-1">{product.name}</h3>
-           
-           {/* Size Badge */}
-           {firstVariant && (
-              <span className="inline-block w-max text-[10px] uppercase bg-stone-100 px-2 py-1 rounded text-stone-600 font-medium mb-3">
-                 {firstVariant.size}
-              </span>
-           )}
+          <p className="text-xs text-stone-500 uppercase font-bold tracking-wider mb-1">{product.brand}</p>
+          <h3 className="text-lg text-[#000000] font-medium leading-tight mb-2 line-clamp-1">{product.name}</h3>
+          
+          {firstVariant && (
+            <span className="inline-block w-max text-[10px] uppercase bg-stone-100 px-2 py-1 rounded text-stone-600 font-medium mb-3">
+              {firstVariant.size}
+            </span>
+          )}
 
-           <div className="mt-auto flex items-center gap-3">
-             <span className="font-bold text-[#000000] text-lg">
-               LKR {(displayPrice || 0).toLocaleString()}
-             </span>
-             {displayOriginalPrice > 0 && (
-               <span className="text-sm text-stone-400 line-through">
-                 LKR {displayOriginalPrice.toLocaleString()}
-               </span>
-             )}
-           </div>
-         </div>
+          <div className="mt-auto">
+            {/* Price Row */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="font-bold text-[#000000] text-lg">
+                LKR {(displayPrice || 0).toLocaleString()}
+              </span>
+              {displayOriginalPrice > 0 && (
+                <span className="text-sm text-stone-400 line-through">
+                  LKR {displayOriginalPrice.toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            {/* Action Buttons — always visible */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-white border-2 border-[#000000] text-[#000000] py-2.5 rounded-xl text-sm font-bold hover:bg-[#000000] hover:text-white transition-colors"
+              >
+                <ShoppingBag size={15} />
+                Add
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#ee3f5c] text-white py-2.5 rounded-xl text-sm font-bold hover:bg-[#e01f3f] transition-colors shadow-md"
+              >
+                <Zap size={15} fill="currentColor" />
+                Buy Now
+              </button>
+            </div>
+          </div>
+        </div>
       </motion.div>
     </Link>
   );

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, CheckCircle, Truck, Banknote } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
@@ -82,12 +83,12 @@ export default function CheckoutPage() {
       // 3. Success
       setLoading(false);
       clearCart();
-      alert(`Order Placed Successfully! Order ID: #${data.orderId.slice(-6)}`);
+      toast.success(`Order Placed Successfully! Order ID: #${data.orderId.slice(-6)}`);
       router.push('/'); 
 
     } catch (error: any) {
       console.error(error);
-      alert(`Failed to place order: ${error.message}`);
+      toast.error(`Failed to place order: ${error.message}`);
       setLoading(false);
     }
   };

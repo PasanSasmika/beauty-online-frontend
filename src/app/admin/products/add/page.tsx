@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import * as z from 'zod';
 import { Loader2, UploadCloud, CheckCircle, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // --- 1. ZOD SCHEMA ---
 const productSchema = z.object({
@@ -122,12 +123,12 @@ export default function AddProductPage() {
         throw new Error(errData.error || 'Failed to upload');
       }
 
-      alert('Product Created Successfully!');
+      toast.success('Product Created Successfully!');
       router.push('/admin/products');
 
     } catch (error: any) {
       console.error(error);
-      alert(error.message || 'Error creating product');
+      toast.success(error.message || 'Error creating product');
     } finally {
       setLoading(false);
     }

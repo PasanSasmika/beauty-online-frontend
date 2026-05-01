@@ -16,6 +16,7 @@ interface CartContextType {
   cart: CartItem[];
   isCartOpen: boolean;
   addToCart: (item: Omit<CartItem, 'variantId'>) => void;
+  addToCartSilent: (item: Omit<CartItem, 'variantId'>) => void;
   removeFromCart: (variantId: string) => void;
   updateQuantity: (variantId: string, delta: number) => void;
   clearCart: () => void;
@@ -40,9 +41,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: Omit<CartItem, 'variantId'>) => {
+  const upsertCart = (product: Omit<CartItem, 'variantId'>) => {
     const variantId = `${product.id}-${product.size}`;
-    
     setCart((prev) => {
       const existing = prev.find((item) => item.variantId === variantId);
       if (existing) {
@@ -54,7 +54,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...product, variantId }];
     });
-    setIsCartOpen(true); // Open cart when item added
+  };
+
+  // Opens cart sidebar after adding
+  const addToCart = (product: Omit<CartItem, 'variantId'>) => {
+    upsertCart(product);
+    setIsCartOpen(true);
+  };
+
+  // Adds to cart without opening the sidebar (used by Buy Now)
+  const addToCartSilent = (product: Omit<CartItem, 'variantId'>) => {
+    upsertCart(product);
   };
 
   const removeFromCart = (variantId: string) => {
@@ -79,7 +89,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, isCartOpen, addToCart, removeFromCart, updateQuantity, clearCart, toggleCart, cartTotal }}>
+    <CartContext.Provider value={{ cart, isCartOpen, addToCart, addToCartSilent, removeFromCart, updateQuantity, clearCart, toggleCart, cartTotal }}>
       {children}
     </CartContext.Provider>
   );

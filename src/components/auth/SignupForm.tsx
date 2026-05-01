@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface SignupFormProps {
   onSwitch: () => void;
@@ -28,7 +29,7 @@ export default function SignupForm({ onSwitch }: SignupFormProps) {
       if (!res.ok) throw new Error(data.error || 'Signup failed');
 
       // Success! Switch to login so they can sign in
-      alert('Account created! Please sign in.');
+      toast.success('Account created! Please sign in.');
       onSwitch();
       
     } catch (err: any) {

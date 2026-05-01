@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Pencil, Trash2, Plus, Loader2, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // Updated Interface to match new DB response
 interface Product {
@@ -66,10 +67,10 @@ export default function AdminProductsPage() {
   }
 
   setProducts(prev => prev.filter(p => p.id !== id));
-  alert('Product deleted successfully');
+  toast.success('Product deleted successfully');
 } catch (error) {
   console.error(error);
-  alert('Error connecting to server');
+  toast.success('Error connecting to server');
 }
   };
 

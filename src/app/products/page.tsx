@@ -3,8 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Loader2, ArrowLeft, Search, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Loader2, ArrowLeft, Search, X, ShoppingBag, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 interface Product {
   id: number;
@@ -164,6 +166,9 @@ export default function AllProductsPage() {
 
 // Helper Card Component
 function ProductCard({ product }: { product: Product }) {
+  const { addToCart } = useCart();
+  const router = useRouter();
+
   let imageUrl = '/logo.png'; 
   try {
     let imageData = product.images;
@@ -195,6 +200,35 @@ function ProductCard({ product }: { product: Product }) {
   const discount = displayOriginalPrice > 0
     ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)
     : 0;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!firstVariant) return;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: displayPrice,
+      size: firstVariant.size,
+      image: imageUrl,
+      quantity: 1,
+    });
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!firstVariant) return;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: displayPrice,
+      size: firstVariant.size,
+      image: imageUrl,
+      quantity: 1,
+    });
+    router.push('/checkout');
+  };
 
   return (
     <Link href={`/products/${product.id}`} className="block">
@@ -228,7 +262,7 @@ function ProductCard({ product }: { product: Product }) {
                {firstVariant.size}
             </span>
          )}
-         <div className="flex items-center gap-3">
+         <div className="flex items-center gap-3 mb-4">
            <span className="font-bold text-[#000000] text-lg">
              LKR {(displayPrice || 0).toLocaleString()}
            </span>
@@ -237,6 +271,24 @@ function ProductCard({ product }: { product: Product }) {
                LKR {displayOriginalPrice.toLocaleString()}
              </span>
            )}
+         </div>
+
+         {/* Action Buttons — always visible */}
+         <div className="flex gap-2">
+           <button
+             onClick={handleAddToCart}
+             className="flex-1 flex items-center justify-center gap-1.5 bg-white border-2 border-[#000000] text-[#000000] py-2.5 rounded-xl text-sm font-bold hover:bg-[#000000] hover:text-white transition-colors"
+           >
+             <ShoppingBag size={15} />
+             Add
+           </button>
+           <button
+             onClick={handleBuyNow}
+             className="flex-1 flex items-center justify-center gap-1.5 bg-[#ee3f5c] text-white py-2.5 rounded-xl text-sm font-bold hover:bg-[#e01f3f] transition-colors shadow-md"
+           >
+             <Zap size={15} fill="currentColor" />
+             Buy Now
+           </button>
          </div>
        </div>
     </motion.div>

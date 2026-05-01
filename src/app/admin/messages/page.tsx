@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Loader2, Mail, MessageSquare, Send, CheckCircle, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation'; // Added for redirect if no token
+import toast from 'react-hot-toast';
 
 interface Message {
   _id: string;
@@ -72,7 +73,7 @@ export default function AdminMessagesPage() {
       const token = localStorage.getItem('token'); // <--- 3. Get Token again
 
       if (!token) {
-        alert("You are not logged in!");
+        toast.success("You are not logged in!");
         return;
       }
 
@@ -86,17 +87,17 @@ export default function AdminMessagesPage() {
       });
 
       if (res.ok) {
-        alert('Reply sent successfully!');
+        toast.success('Reply sent successfully!');
         setReplyingTo(null);
         setReplyText('');
         fetchMessages(); 
       } else {
         const err = await res.json();
-        alert(err.error || 'Failed to send email.');
+        toast.error(err.error || 'Failed to send email.');
       }
     } catch (e) {
       console.error(e);
-      alert('Network error. Check console.');
+      toast.error('Network error. Check console.');
     } finally {
       setSending(false);
     }

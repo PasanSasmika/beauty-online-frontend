@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Loader2, Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 // Data Interfaces
 interface Variant {
@@ -108,7 +109,7 @@ export default function EditProductPage() {
 
       } catch (error) {
         console.error(error);
-        alert('Error loading product');
+        toast.error('Error loading product');
         router.push('/admin/products');
       }
     };
@@ -141,12 +142,12 @@ export default function EditProductPage() {
 
       if (!res.ok) throw new Error('Failed to update');
 
-      alert('Product Updated Successfully!');
+      toast.success('Product Updated Successfully!');
       router.push('/admin/products');
 
     } catch (error) {
       console.error(error);
-      alert('Error updating product');
+      toast.error('Error updating product');
     } finally {
       setIsSaving(false);
     }
