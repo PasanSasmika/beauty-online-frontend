@@ -4,7 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { useEffect } from "react";
 import { initSmoothScroll } from "@/lib/smooth-scroll";
-import CustomCursor from "@/components/ui/CustomCursor";
+// import CustomCursor from "@/components/ui/CustomCursor";
 import Header from "@/components/layout/Header";
 import Preloader from "@/components/ui/Prloader";
 import { CartProvider } from "@/context/CartContext";
@@ -42,7 +42,7 @@ export default function RootLayout({
           <CartSidebar />
           <Preloader/>
           <Header />
-          <CustomCursor />
+          {/* <CustomCursor /> */}
           {/* MOVED INSIDE THE PROVIDER */}
           {children}
 
