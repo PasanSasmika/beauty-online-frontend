@@ -5,6 +5,31 @@ import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, Package, ArrowRight, Copy, Check, Download, Loader2 } from 'lucide-react';
 
+interface OrderItem {
+  name: string;
+  size: string;
+  price: number;
+  quantity: number;
+}
+
+interface Order {
+  id: string;
+  orderId?: string;
+  customer: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+  };
+  items: OrderItem[];
+  total_amount: number;
+  shipping_cost: number;
+  payment_method: string;
+  createdAt: string;
+}
+
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId') || '';
@@ -13,11 +38,48 @@ function OrderSuccessContent() {
   const [copied, setCopied]         = useState(false);
   const [show, setShow]             = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [order, setOrder]           = useState<Order | null>(null);
+  const [shippingFromSettings, setShippingFromSettings] = useState<number | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), 50);
     return () => clearTimeout(t);
   }, []);
+
+  // Fetch order + settings in parallel
+  useEffect(() => {
+    if (!orderId) { setDataLoading(false); return; }
+
+    const fetchAll = async () => {
+      try {
+        const [orderRes, settingsRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`),
+        ]);
+
+        if (orderRes.ok) {
+          const orderData = await orderRes.json();
+          console.log('Order data:', orderData); // debug
+          setOrder(orderData);
+        }
+
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          console.log('Settings data:', settingsData); // debug
+          setShippingFromSettings(
+            settingsData.shipping_cost ?? settingsData.shippingCost ?? null
+          );
+        }
+      } catch (err) {
+        console.error('Failed to fetch order/settings:', err);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    fetchAll();
+  }, [orderId]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shortId);
@@ -28,21 +90,43 @@ function OrderSuccessContent() {
   const handleDownloadReceipt = async () => {
     setPdfLoading(true);
     try {
-      // Dynamically import jsPDF so it doesn't bloat initial bundle
       const { jsPDF } = await import('jspdf');
 
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-
-      const W = doc.internal.pageSize.getWidth();   // 210mm
+      const W = doc.internal.pageSize.getWidth();
       const margin = 24;
       const col = W - margin * 2;
       let y = 20;
 
-      const date = new Date().toLocaleDateString('en-US', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      });
+      // ── Resolve real values ──────────────────────────────────────────
+      const customer   = order?.customer;
+      const items      = order?.items || [];
 
-      // ── Helper functions ────────────────────────────────────────────
+      // Shipping: prefer order.shipping_cost, fallback to settings, then 0
+      const shippingCost: number =
+        (order?.shipping_cost && order.shipping_cost > 0)
+          ? order.shipping_cost
+          : (shippingFromSettings ?? 0);
+
+      // Total: prefer order.total_amount, fallback to items sum + shipping
+      const itemsTotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+      const totalAmount: number =
+        (order?.total_amount && order.total_amount > 0)
+          ? order.total_amount
+          : itemsTotal + shippingCost;
+
+      const subtotal = totalAmount - shippingCost;
+
+      const paymentMethod = (order?.payment_method || 'COD').toUpperCase();
+      const orderDate = order?.createdAt
+        ? new Date(order.createdAt).toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+          })
+        : new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+          });
+
+      // ── Helpers ──────────────────────────────────────────────────────
       const centerText = (text: string, yPos: number, size = 11) => {
         doc.setFontSize(size);
         doc.text(text, W / 2, yPos, { align: 'center' });
@@ -55,8 +139,8 @@ function OrderSuccessContent() {
         doc.setLineDashPattern([], 0);
       };
 
-      const solidLine = (yPos: number, color = [40, 36, 30]) => {
-        doc.setDrawColor(...(color as [number, number, number]));
+      const solidLine = (yPos: number) => {
+        doc.setDrawColor(40, 36, 30);
         doc.setLineWidth(0.5);
         doc.line(margin, yPos, W - margin, yPos);
         doc.setLineWidth(0.2);
@@ -72,23 +156,20 @@ function OrderSuccessContent() {
         doc.text(value, W - margin, yPos, { align: 'right' });
       };
 
-      // ── BRAND HEADER ────────────────────────────────────────────────
+      // ── BRAND HEADER ─────────────────────────────────────────────────
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(22);
       doc.setTextColor(45, 36, 30);
-      centerText('SKINCARES.LK', y, 22);
-      y += 7;
+      centerText('SKINCARES.LK', y, 22); y += 7;
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(150, 150, 150);
-      centerText('Premium Skincare  ·  Sri Lanka', y, 9);
-      y += 10;
+      centerText('Premium Skincare  ·  Sri Lanka', y, 9); y += 10;
 
-      solidLine(y);
-      y += 10;
+      solidLine(y); y += 10;
 
-      // ── ORDER ID BOX ────────────────────────────────────────────────
+      // ── ORDER ID BOX ─────────────────────────────────────────────────
       doc.setFillColor(245, 245, 242);
       doc.setDrawColor(220, 215, 210);
       doc.roundedRect(margin, y, col, 28, 3, 3, 'FD');
@@ -101,92 +182,159 @@ function OrderSuccessContent() {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(24);
       doc.setTextColor(45, 36, 30);
-      centerText(`#${shortId}`, y + 21, 24);
+      centerText(`${shortId}`, y + 21, 24);
       y += 36;
 
-      // ── STATUS BADGE ────────────────────────────────────────────────
+      // ── STATUS BADGE ─────────────────────────────────────────────────
       doc.setFillColor(240, 253, 244);
       doc.setDrawColor(187, 247, 208);
       doc.roundedRect(margin, y, col, 12, 2, 2, 'FD');
-
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.setTextColor(21, 128, 61);
       centerText('ORDER CONFIRMED', y + 8, 10);
       y += 20;
 
-      // ── ORDER META ──────────────────────────────────────────────────
-      doc.setTextColor(80, 80, 80);
-      row('Date', date, y);               y += 8;
-      row('Payment Method', 'Cash on Delivery (COD)', y); y += 8;
+      // ── ORDER META ───────────────────────────────────────────────────
+      row('Date', orderDate, y); y += 8;
+      row('Payment Method', paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : paymentMethod, y); y += 8;
       row('Payment Status', 'Pending — Pay on delivery', y); y += 6;
 
       dashedLine(y); y += 8;
 
-      // ── PRICING ─────────────────────────────────────────────────────
-      row('Shipping Fee', 'LKR 500.00', y); y += 8;
+      // ── CUSTOMER DETAILS ─────────────────────────────────────────────
+      if (customer) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(140, 130, 120);
+        doc.text('DELIVERY TO', margin, y); y += 6;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(40, 36, 30);
+        doc.text(`${customer.firstName} ${customer.lastName}`, margin, y); y += 6;
+        if (customer.phone) { doc.text(customer.phone, margin, y); y += 6; }
+        if (customer.address || customer.city) {
+          doc.text(`${customer.address}${customer.city ? ', ' + customer.city : ''}`, margin, y); y += 6;
+        }
+        y += 2;
+        dashedLine(y); y += 8;
+      }
+
+      // ── ORDER ITEMS TABLE ─────────────────────────────────────────────
+      if (items.length > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(140, 130, 120);
+        doc.text('ORDER ITEMS', margin, y); y += 6;
+
+        // Table header
+        doc.setFillColor(245, 244, 241);
+        doc.rect(margin, y - 1, col, 8, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 90, 80);
+        doc.text('Product', margin + 2, y + 5);
+        doc.text('Size', margin + 90, y + 5);
+        doc.text('Qty', margin + 115, y + 5);
+        doc.text('Price', W - margin - 2, y + 5, { align: 'right' });
+        y += 10;
+
+        items.forEach((item) => {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(40, 36, 30);
+
+          // Truncate long names
+          let name = item.name;
+          while (doc.getTextWidth(name + '...') > 80 && name.length > 0) name = name.slice(0, -1);
+          if (name !== item.name) name += '...';
+
+          doc.text(name, margin + 2, y);
+          doc.text(item.size || '-', margin + 90, y);
+          doc.text(String(item.quantity), margin + 118, y);
+          doc.setFont('helvetica', 'bold');
+          doc.text(`LKR ${(item.price * item.quantity).toLocaleString()}`, W - margin - 2, y, { align: 'right' });
+          y += 8;
+
+          doc.setDrawColor(235, 232, 228);
+          doc.setLineWidth(0.1);
+          doc.line(margin, y - 2, W - margin, y - 2);
+          doc.setLineWidth(0.2);
+        });
+
+        y += 2;
+        dashedLine(y); y += 8;
+      }
+
+      // ── PRICING SUMMARY ───────────────────────────────────────────────
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(140, 130, 120);
+      doc.text('PAYMENT SUMMARY', margin, y); y += 8;
+
+      if (items.length > 0) {
+        row('Subtotal', `LKR ${subtotal.toLocaleString()}`, y); y += 8;
+      }
+      row('Shipping Fee', `LKR ${shippingCost.toLocaleString()}`, y); y += 6;
 
       dashedLine(y); y += 8;
 
-      // Total row
       doc.setFontSize(13);
       doc.setTextColor(45, 36, 30);
       doc.setFont('helvetica', 'bold');
       doc.text('Total Amount', margin, y);
+      doc.text(`LKR ${totalAmount.toLocaleString()}`, W - margin, y, { align: 'right' });
+      y += 6;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
       doc.text('Payable on delivery', W - margin, y, { align: 'right' });
-      y += 14;
+      y += 10;
 
-      solidLine(y); y += 12;
+      solidLine(y); y += 10;
 
-      // ── THANK YOU ───────────────────────────────────────────────────
+      // ── THANK YOU ─────────────────────────────────────────────────────
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
       doc.setTextColor(45, 36, 30);
-      centerText('Thank You for Your Order!', y, 14);
-      y += 8;
+      centerText('Thank You for Your Order!', y, 14); y += 8;
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(150, 150, 150);
-      centerText('We appreciate your trust in SKINCARES.LK', y, 9);
-      y += 10;
+      centerText('We appreciate your trust in SKINCARES.LK', y, 9); y += 10;
 
       dashedLine(y); y += 10;
 
-      // ── NEXT STEPS BOX ──────────────────────────────────────────────
+      // ── NEXT STEPS ────────────────────────────────────────────────────
       doc.setFillColor(250, 249, 246);
       doc.setDrawColor(230, 225, 220);
       doc.roundedRect(margin, y, col, 34, 3, 3, 'FD');
-
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
       doc.setTextColor(140, 130, 120);
       doc.text('WHAT HAPPENS NEXT', margin + 5, y + 8);
-
-      const steps = [
-        '1.  We\'ll carefully prepare and pack your items',
-        '2.  Your order will be dispatched for delivery',
-        '3.  Pay cash to the delivery rider upon arrival',
-      ];
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(70, 60, 50);
-      steps.forEach((step, i) => {
-        doc.text(step, margin + 5, y + 16 + i * 7);
+      ["1.  We'll carefully prepare and pack your items",
+       '2.  Your order will be dispatched for delivery',
+       '3.  Pay cash to the delivery rider upon arrival'].forEach((s, i) => {
+        doc.text(s, margin + 5, y + 16 + i * 7);
       });
       y += 44;
 
       dashedLine(y); y += 10;
 
-      // ── FOOTER ──────────────────────────────────────────────────────
-      doc.setFont('helvetica', 'normal');
+      // ── FOOTER ────────────────────────────────────────────────────────
       doc.setFontSize(8);
       doc.setTextColor(180, 180, 180);
-      centerText('Track your order at  skincares.lk/track-order', y, 8);    y += 6;
-      centerText('Questions? Visit  skincares.lk/contact', y, 8);           y += 6;
+      centerText('Track your order at  skincares.lk/track-order', y, 8); y += 6;
+      centerText('Questions? Visit  skincares.lk/contact', y, 8); y += 6;
       centerText('This is your official order confirmation. Keep it safe.', y, 8);
 
-      // ── SAVE ────────────────────────────────────────────────────────
       doc.save(`SKINCARES-Receipt-${shortId}.pdf`);
 
     } catch (err) {
@@ -198,8 +346,6 @@ function OrderSuccessContent() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center px-5 py-20">
-
-      {/* Card */}
       <div
         className={`
           bg-white rounded-3xl shadow-sm border border-stone-100 p-10 max-w-md w-full text-center
@@ -230,7 +376,6 @@ function OrderSuccessContent() {
             <button
               onClick={handleCopy}
               className="text-stone-400 hover:text-[#2D241E] transition-colors p-1.5 hover:bg-stone-100 rounded-lg"
-              title="Copy order ID"
             >
               {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
             </button>
@@ -239,13 +384,9 @@ function OrderSuccessContent() {
         </div>
 
         {/* What's next */}
-        <div className="text-left bg-[#2D241E]/3 rounded-2xl px-5 py-4 mb-8 space-y-2.5">
+        <div className="text-left bg-stone-50 rounded-2xl px-5 py-4 mb-8 space-y-2.5">
           <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">What happens next</p>
-          {[
-            "We'll prepare and pack your items",
-            'Your order will be dispatched soon',
-            'Cash on delivery upon arrival',
-          ].map((step, i) => (
+          {["We'll prepare and pack your items", 'Your order will be dispatched soon', 'Cash on delivery upon arrival'].map((step, i) => (
             <div key={i} className="flex items-start gap-2.5 text-sm text-stone-600">
               <span className="w-5 h-5 rounded-full bg-[#2D241E] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                 {i + 1}
@@ -264,14 +405,16 @@ function OrderSuccessContent() {
             <Package size={16} /> Track Your Order <ArrowRight size={15} />
           </Link>
 
-          {/* ✅ Direct PDF Download */}
+          {/* Download Receipt — disabled until data loaded */}
           <button
             onClick={handleDownloadReceipt}
-            disabled={pdfLoading}
-            className="w-full border border-stone-200 text-stone-600 rounded-xl py-3.5 font-medium text-sm hover:bg-stone-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            disabled={pdfLoading || dataLoading}
+            className="w-full border border-stone-200 text-stone-600 rounded-xl py-3.5 font-medium text-sm hover:bg-stone-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {pdfLoading
               ? <><Loader2 size={15} className="animate-spin" /> Generating...</>
+              : dataLoading
+              ? <><Loader2 size={15} className="animate-spin" /> Loading order data...</>
               : <><Download size={15} /> Download Receipt</>
             }
           </button>
@@ -285,7 +428,6 @@ function OrderSuccessContent() {
         </div>
       </div>
 
-      {/* Subtle footnote */}
       <p className="text-xs text-stone-400 mt-6 text-center">
         Need help? <a href="/contact" className="underline hover:text-stone-600">Contact us</a>
       </p>

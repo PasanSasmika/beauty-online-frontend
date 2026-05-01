@@ -1,21 +1,22 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, Banknote } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Banknote, CheckCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   
-  const SHIPPING_COST = 500;
+  const [loading, setLoading] = useState(false);
+  const [fetchingSettings, setFetchingSettings] = useState(true);
+  const [shippingCost, setShippingCost] = useState<number>(0);
   
   const [formData, setFormData] = useState({
     firstName: user?.full_name?.split(' ')[0] || '',
@@ -26,6 +27,27 @@ export default function CheckoutPage() {
     city: ''
   });
 
+  // Fetch dynamic shipping cost from settings API
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`);
+        if (res.ok) {
+          const data = await res.json();
+          setShippingCost(data.shipping_cost);
+        } else {
+          setShippingCost(500); // Fallback if API fails
+        }
+      } catch (error) {
+        console.error("Failed to fetch shipping cost", error);
+        setShippingCost(500); // Fallback
+      } finally {
+        setFetchingSettings(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -34,7 +56,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
 
-    const totalAmount = cartTotal + SHIPPING_COST;
+    const totalAmount = cartTotal + shippingCost;
 
     try {
       const orderData = {
@@ -56,7 +78,7 @@ export default function CheckoutPage() {
           image: item.image
         })),
         total_amount: totalAmount,
-        shipping_cost: SHIPPING_COST,
+        shipping_cost: shippingCost,
         payment_method: 'cod'
       };
 
@@ -76,7 +98,7 @@ export default function CheckoutPage() {
       setLoading(false);
       clearCart();
 
-      // ✅ Redirect to success page with orderId
+      // Redirect to success page with orderId
       router.push(`/order-success?orderId=${data.orderId}`);
 
     } catch (error: any) {
@@ -130,7 +152,7 @@ export default function CheckoutPage() {
 
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || fetchingSettings}
               className="w-full bg-[#2D241E] text-white py-5 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70"
             >
               {loading ? <Loader2 className="animate-spin" /> : 'Confirm Order'}
@@ -168,11 +190,23 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Shipping</span>
-                <span className="text-[#ee3f5c] font-medium">LKR {SHIPPING_COST.toLocaleString()}</span>
+                <span className="text-[#ee3f5c] font-medium">
+                  {fetchingSettings ? (
+                    <Loader2 size={14} className="animate-spin inline mr-1" />
+                  ) : (
+                    `LKR ${shippingCost.toLocaleString()}`
+                  )}
+                </span>
               </div>
               <div className="flex justify-between text-[#2D241E] font-bold text-xl pt-2 border-t border-stone-100">
                 <span>Total</span>
-                <span>LKR {(cartTotal + SHIPPING_COST).toLocaleString()}</span>
+                <span>
+                  {fetchingSettings ? (
+                    '...'
+                  ) : (
+                    `LKR ${(cartTotal + shippingCost).toLocaleString()}`
+                  )}
+                </span>
               </div>
             </div>
           </div>

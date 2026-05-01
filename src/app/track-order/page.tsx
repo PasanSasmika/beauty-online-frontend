@@ -243,7 +243,7 @@ function GuestLookup({ onResult }: { onResult: (order: Order | null) => void }) 
           required
         />
         <p className="text-[11px] text-stone-400 mt-1.5">
-          Found on your order confirmation page — the code after the <span className="font-mono">#</span>
+          Found on your order confirmation page or downloaded receipt
         </p>
       </div>
  

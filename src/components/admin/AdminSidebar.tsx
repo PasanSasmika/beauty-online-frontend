@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ShoppingBag, PlusCircle, LogOut, Tags, Package, Mail } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, PlusCircle, LogOut, Tags, Package, Mail, Settings } from 'lucide-react';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
@@ -92,6 +92,16 @@ export default function AdminSidebar() {
 >
   <Mail size={20} />
   <span className="font-medium">Messages</span>
+</Link>
+
+<Link 
+  href="/admin/config" 
+  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+    isActive('/admin/config') ? 'bg-[#8B9B86] text-white' : 'hover:bg-[#3E342F] text-stone-300'
+  }`}
+>
+  <Settings size={20} />
+  <span className="font-medium">Settings</span>
 </Link>
       </nav>
 
