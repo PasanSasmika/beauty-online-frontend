@@ -52,11 +52,11 @@ export default function Hero() {
           {/* 1. Reduced base font size and removed <br /> so it wraps naturally on mobile */}
        
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#000000] leading-[1.15]">
-            Where Elegance <br />
-            <span className="text-[#ee3f5c]">Truly Meets Radiance</span>
+            Where Beauty <br />
+            <span className="text-[#ee3f5c]">Meets True Elegance</span>
           </h1>
           <p className="text-base md:text-xl text-stone-600 max-w-lg leading-relaxed font-medium opacity-90">
-            Step into a world of beauty and sophistication. Relax, rejuvenate, and let our curated treatments elevate your mind, body, and spirit.
+            Step into a world of luxury skincare and timeless glow. Discover products crafted to nourish, enhance, and reveal your natural radiance.
           </p>
 
           {/* 2. Search bar — icon-only button on xs screens */}
