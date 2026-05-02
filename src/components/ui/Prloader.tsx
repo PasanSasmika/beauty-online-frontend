@@ -104,7 +104,7 @@ export default function Preloader() {
             transition={{ delay: 0.9, duration: 0.5 }}
             className="mt-6 text-black/60 text-[11px] tracking-[0.25em] uppercase font-semibold"
           >
-            Glow from within
+            Awaken Your Natural Glow
           </motion.p>
 
           {/* Loading bar */}
