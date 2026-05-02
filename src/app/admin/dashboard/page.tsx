@@ -144,7 +144,7 @@ export default function AdminDashboard() {
             <tbody className="divide-y divide-stone-100 text-sm">
                 {data.recentOrders.map((order) => (
                     <tr key={order._id || order.id} className="hover:bg-stone-50 transition-colors">
-                        <td className="px-6 py-4 font-mono text-stone-500">#{order._id?.slice(-6) || order.id?.slice(-6)}</td>
+                        <td className="px-6 py-4 font-mono text-stone-500">{order._id?.slice(-8) || order.id?.slice(-8)}</td>
                         <td className="px-6 py-4 font-medium text-[#2D241E]">
                             {order.customer?.firstName} {order.customer?.lastName}
                         </td>

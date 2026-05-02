@@ -3,14 +3,13 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation"; // ← add this
 import { initSmoothScroll } from "@/lib/smooth-scroll";
-// import CustomCursor from "@/components/ui/CustomCursor";
 import Header from "@/components/layout/Header";
 import Preloader from "@/components/ui/Prloader";
 import { CartProvider } from "@/context/CartContext";
 import CartSidebar from "@/components/cart/CartSidebar";
 import { AuthProvider } from "@/context/AuthContext";
-// import SplashCursor from "@/components/SplashCursor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +26,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
+  const pathname = usePathname(); // ← add this
+  const isAdmin = pathname?.startsWith('/admin'); // ← add this
+
   useEffect(() => {
     initSmoothScroll();
   }, []);
@@ -35,18 +36,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* PROVIDER MUST WRAP EVERYTHING */}
         <AuthProvider>
-        <CartProvider>
-          
-          <CartSidebar />
-          <Preloader/>
-          <Header />
-          {/* <CustomCursor /> */}
-          {/* MOVED INSIDE THE PROVIDER */}
-          {children}
-
-        </CartProvider>
+          <CartProvider>
+            <CartSidebar />
+            {!isAdmin && <Preloader />}  {/* ← hide on admin */}
+            {!isAdmin && <Header />}     {/* ← hide on admin */}
+            {children}
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

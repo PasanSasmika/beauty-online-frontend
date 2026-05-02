@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Package, Search, MapPin, CheckCircle2, Clock, Truck, Box, XCircle, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
+import { Package, Search, MapPin, CheckCircle2, Clock, Truck, Box, XCircle, ChevronDown, ChevronUp, Calendar, RotateCcw } from 'lucide-react';
 
 // --- TYPES ---
 interface OrderItem {
@@ -33,13 +33,14 @@ interface Order {
 
 // --- STATUS CONFIG ---
 const STATUS_STEPS = [
-  { key: 'pending',    label: 'Order Placed',  icon: Clock,         desc: 'We received your order' },
-  { key: 'processing', label: 'Processing',    icon: Box,           desc: 'Being carefully prepared' },
-  { key: 'shipped',    label: 'On the Way',    icon: Truck,         desc: 'Out for delivery' },
-  { key: 'delivered',  label: 'Delivered',     icon: CheckCircle2,  desc: 'Enjoy your order!' },
+  { key: 'pending',    label: 'Order Placed',  icon: Clock,        desc: 'We received your order' },
+  { key: 'processing', label: 'Processing',    icon: Box,          desc: 'Being carefully prepared' },
+  { key: 'shipped',    label: 'On the Way',    icon: Truck,        desc: 'Out for delivery' },
+  { key: 'delivered',  label: 'Delivered',     icon: CheckCircle2, desc: 'Enjoy your order!' },
+  { key: 'returned',   label: 'Returned',      icon: RotateCcw,    desc: 'Return processed' },
 ];
 
-const STATUS_ORDER = ['pending', 'processing', 'shipped', 'delivered'];
+const STATUS_ORDER = ['pending', 'processing', 'shipped', 'delivered', 'returned'];
 
 function getStepIndex(status: string) {
   const idx = STATUS_ORDER.indexOf(status);
@@ -49,7 +50,8 @@ function getStepIndex(status: string) {
 // --- TIMELINE COMPONENT ---
 function OrderTimeline({ status }: { status: string }) {
   const isCancelled = status === 'cancelled';
-  const activeIdx = isCancelled ? -1 : getStepIndex(status);
+  const isReturned  = status === 'returned';   // ← fixed: outside JSX
+  const activeIdx   = isCancelled ? -1 : getStepIndex(status);
 
   return (
     <div className="w-full py-6 px-2">
@@ -61,12 +63,20 @@ function OrderTimeline({ status }: { status: string }) {
             <p className="text-red-400 text-xs mt-0.5">This order has been cancelled.</p>
           </div>
         </div>
+      ) : isReturned ? (
+        <div className="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-2xl px-5 py-4">
+          <RotateCcw size={22} className="text-orange-400 shrink-0" />
+          <div>
+            <p className="font-bold text-orange-600 text-sm">Order Returned</p>
+            <p className="text-orange-400 text-xs mt-0.5">This order has been returned and is being processed.</p>
+          </div>
+        </div>
       ) : (
         <div className="relative flex items-start justify-between">
           {/* Background line */}
           <div className="absolute top-[18px] left-0 right-0 h-[2px] bg-stone-100 z-0 mx-[calc(12.5%)] hidden sm:block" />
 
-          {/* Progress line — fills up to active step */}
+          {/* Progress line */}
           {activeIdx > 0 && (
             <div
               className="absolute top-[18px] h-[2px] bg-gradient-to-r from-[#2D241E] to-[#ee3f5c] z-0 hidden sm:block transition-all duration-700"
@@ -79,12 +89,11 @@ function OrderTimeline({ status }: { status: string }) {
 
           {STATUS_STEPS.map((step, idx) => {
             const Icon = step.icon;
-            const isDone = idx <= activeIdx;
+            const isDone   = idx <= activeIdx;
             const isActive = idx === activeIdx;
 
             return (
               <div key={step.key} className="flex flex-col items-center gap-2 z-10 flex-1 min-w-0">
-                {/* Dot */}
                 <div className={`
                   relative w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-500
                   ${isDone
@@ -93,17 +102,11 @@ function OrderTimeline({ status }: { status: string }) {
                       : 'bg-[#2D241E] border-[#2D241E]'
                     : 'bg-white border-stone-200'}
                 `}>
-                  <Icon
-                    size={16}
-                    className={isDone ? 'text-white' : 'text-stone-300'}
-                    strokeWidth={2.5}
-                  />
+                  <Icon size={16} className={isDone ? 'text-white' : 'text-stone-300'} strokeWidth={2.5} />
                   {isActive && (
                     <span className="absolute -inset-1 rounded-full border-2 border-[#ee3f5c] opacity-40 animate-ping" />
                   )}
                 </div>
-
-                {/* Label */}
                 <div className="text-center px-1 max-w-[90px]">
                   <p className={`text-[11px] font-bold leading-tight ${isDone ? 'text-[#2D241E]' : 'text-stone-300'}`}>
                     {step.label}
@@ -127,7 +130,6 @@ function OrderCard({ order }: { order: Order }) {
 
   return (
     <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden transition-shadow hover:shadow-md">
-      {/* Card Header */}
       <div className="px-6 pt-6 pb-2">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
@@ -136,10 +138,11 @@ function OrderCard({ order }: { order: Order }) {
                 #{order.id.slice(-8).toUpperCase()}
               </span>
               <span className={`text-[11px] font-bold uppercase px-2.5 py-1 rounded-full ${
-                order.order_status === 'delivered' ? 'bg-green-100 text-green-700' :
-                order.order_status === 'shipped'   ? 'bg-purple-100 text-purple-700' :
-                order.order_status === 'processing'? 'bg-blue-100 text-blue-700' :
-                order.order_status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                order.order_status === 'delivered'  ? 'bg-green-100 text-green-700'   :
+                order.order_status === 'shipped'    ? 'bg-purple-100 text-purple-700' :
+                order.order_status === 'processing' ? 'bg-blue-100 text-blue-700'     :
+                order.order_status === 'cancelled'  ? 'bg-red-100 text-red-700'       :
+                order.order_status === 'returned'   ? 'bg-orange-100 text-orange-700' : // ← added
                 'bg-yellow-100 text-yellow-700'
               }`}>
                 {order.order_status}
@@ -157,12 +160,10 @@ function OrderCard({ order }: { order: Order }) {
         </div>
       </div>
 
-      {/* Timeline */}
       <div className="px-4 sm:px-6">
         <OrderTimeline status={order.order_status} />
       </div>
 
-      {/* Delivery Address Strip */}
       {order.customer?.address && (
         <div className="mx-6 mb-4 flex items-center gap-2 bg-stone-50 rounded-xl px-4 py-3 text-xs text-stone-500">
           <MapPin size={13} className="text-[#ee3f5c] shrink-0" />
@@ -170,7 +171,6 @@ function OrderCard({ order }: { order: Order }) {
         </div>
       )}
 
-      {/* Items Accordion */}
       <div className="border-t border-stone-50">
         <button
           onClick={() => setExpanded(!expanded)}
@@ -206,7 +206,7 @@ function GuestLookup({ onResult }: { onResult: (order: Order | null) => void }) 
   const [orderId, setOrderId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
- 
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderId.trim()) return;
@@ -230,7 +230,7 @@ function GuestLookup({ onResult }: { onResult: (order: Order | null) => void }) 
       setLoading(false);
     }
   };
- 
+
   return (
     <form onSubmit={handleSearch} className="bg-white rounded-2xl border border-stone-100 shadow-sm p-8 space-y-4 max-w-md w-full">
       <div>
@@ -246,13 +246,13 @@ function GuestLookup({ onResult }: { onResult: (order: Order | null) => void }) 
           Found on your order confirmation page or downloaded receipt
         </p>
       </div>
- 
+
       {error && (
         <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-xs text-red-600 font-medium">
           {error}
         </div>
       )}
- 
+
       <button
         type="submit"
         disabled={loading}
@@ -266,15 +266,15 @@ function GuestLookup({ onResult }: { onResult: (order: Order | null) => void }) 
     </form>
   );
 }
+
 // --- MAIN PAGE ---
 export default function TrackOrderPage() {
   const { user, token } = useAuth();
-  const [orders, setOrders]           = useState<Order[]>([]);
-  const [loading, setLoading]         = useState(false);
-  const [guestOrder, setGuestOrder]   = useState<Order | null>(null);
+  const [orders, setOrders]               = useState<Order[]>([]);
+  const [loading, setLoading]             = useState(false);
+  const [guestOrder, setGuestOrder]       = useState<Order | null>(null);
   const [guestSearched, setGuestSearched] = useState(false);
 
-  // Fetch orders for logged-in users
   useEffect(() => {
     if (!token) return;
     setLoading(true);
@@ -296,7 +296,6 @@ export default function TrackOrderPage() {
     <div className="min-h-screen bg-[#FAF9F6] pt-32 pb-24 px-5 md:px-16">
       <div className="max-w-3xl mx-auto">
 
-        {/* Page Header */}
         <div className="mb-12 text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-[#2D241E] rounded-2xl mb-5">
             <Package size={26} className="text-white" />
@@ -311,7 +310,6 @@ export default function TrackOrderPage() {
           </p>
         </div>
 
-        {/* Logged-in: Order List */}
         {user ? (
           loading ? (
             <div className="flex justify-center py-20">
@@ -330,7 +328,6 @@ export default function TrackOrderPage() {
             </div>
           )
         ) : (
-          /* Guest: Lookup Form */
           <div className="flex flex-col items-center gap-6">
             <GuestLookup onResult={handleGuestResult} />
             {guestSearched && guestOrder && (
@@ -339,7 +336,6 @@ export default function TrackOrderPage() {
                 <OrderCard order={guestOrder} />
               </div>
             )}
-            {guestSearched && !guestOrder && null /* Error shown inside form */}
           </div>
         )}
 

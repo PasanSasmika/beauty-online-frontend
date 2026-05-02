@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Loader2, Package, LogOut, Calendar, ChevronRight, MapPin, Clock, Truck, CheckCircle2, XCircle, Box } from 'lucide-react';
+import { Loader2, Package, LogOut, Calendar, ChevronRight, MapPin, Clock, Truck, CheckCircle2, XCircle, Box, RotateCcw,  } from 'lucide-react';
 import Link from 'next/link';
 
 // ── Status timeline mini config ──────────────────────────────────────
@@ -15,6 +15,7 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; ic
   shipped:    { label: 'Shipped',    color: 'text-purple-700', bg: 'bg-purple-100', icon: Truck },
   delivered:  { label: 'Delivered',  color: 'text-green-700',  bg: 'bg-green-100',  icon: CheckCircle2 },
   cancelled:  { label: 'Cancelled',  color: 'text-red-700',    bg: 'bg-red-100',    icon: XCircle },
+  returned:  { label: 'returned',  color: 'text-orange-700',    bg: 'bg-orange-100',    icon: RotateCcw },
 };
 
 // ── Mini dot-line progress bar ───────────────────────────────────────
