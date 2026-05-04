@@ -16,7 +16,8 @@ const productSchema = z.object({
   description: z.string().optional(),
   howToUse: z.string().optional(),
   is_koko_enabled: z.boolean().default(false),
-  
+  document: z.any().optional(),
+
   variants: z.array(z.object({
     size: z.string().min(1, "Size is required"),
     price: z.coerce.number().min(1, "Price must be greater than 0"),
@@ -109,6 +110,10 @@ export default function AddProductPage() {
           formData.append('images', file);
         });
       }
+      const docFiles = data.document as unknown as FileList;
+if (docFiles && docFiles.length > 0) {
+  formData.append('document', docFiles[0]);
+}
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`,
   {
@@ -273,6 +278,37 @@ export default function AddProductPage() {
              </label>
           </div>
         </div>
+
+        {/* DOCUMENT UPLOAD */}
+<div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-4">
+  <h2 className="font-bold text-lg text-[#000000] border-b pb-2">Product Document <span className="text-stone-400 font-normal text-sm">(Optional)</span></h2>
+  <p className="text-xs text-stone-500">Upload a PDF guide, ingredient sheet, or manual for this product.</p>
+
+  <div className="border-2 border-dashed border-stone-300 rounded-xl p-6 text-center hover:bg-stone-50 transition-colors">
+    <input
+      type="file"
+      accept="application/pdf"
+      className="hidden"
+      id="doc-upload"
+      {...register("document")}
+    />
+    <label htmlFor="doc-upload" className="cursor-pointer flex flex-col items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+      </svg>
+      <span className="text-stone-600 font-medium text-sm">Click to upload PDF</span>
+      <span className="text-xs text-stone-400">Max 10MB</span>
+    </label>
+  </div>
+
+  {/* Show selected file name */}
+  {watch("document") && (watch("document") as unknown as FileList)?.length > 0 && (
+    <p className="text-sm text-green-600 flex items-center gap-1">
+      <CheckCircle size={14} />
+      {(watch("document") as unknown as FileList)[0].name}
+    </p>
+  )}
+</div>
 
         <div className="pt-4">
           <button type="submit" disabled={loading} className="w-full bg-[#000000] text-white py-4 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-70">

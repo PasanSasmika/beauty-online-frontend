@@ -24,13 +24,15 @@ interface ProductFormData {
   howToUse: string;
   is_koko_enabled: boolean;
   variants: Variant[];
+  document?: string;
 }
 
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  
+  const [newDocument, setNewDocument] = useState<File | null>(null);
+
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -39,7 +41,8 @@ export default function EditProductPage() {
     register, 
     control, 
     handleSubmit, 
-    reset, 
+    reset,
+    watch,  // ← fixed: was missing
     formState: { errors } 
   } = useForm<ProductFormData>({
     defaultValues: {
@@ -60,7 +63,7 @@ export default function EditProductPage() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`);
 
-  if (!res.ok) throw new Error('Product not found');
+        if (!res.ok) throw new Error('Product not found');
         
         const dbData = await res.json();
         
@@ -68,13 +71,11 @@ export default function EditProductPage() {
         let parsedVariants: Variant[] = [];
         try {
            const vRaw = dbData.variants;
-           // Handle case where DB returns string or already parsed object
            const vJson = typeof vRaw === 'string' ? JSON.parse(vRaw) : vRaw;
            
            if (Array.isArray(vJson)) {
              parsedVariants = vJson.map((v: any) => ({
                size: v.size || '',
-               // Ensure numbers are numbers, not strings like "3000.00"
                price: parseFloat(v.price) || 0,
                quantity: parseInt(v.quantity) || 0,
                original_price: v.original_price ? parseFloat(v.original_price) : 0
@@ -84,10 +85,8 @@ export default function EditProductPage() {
            console.error("Variant parse error", e);
         }
 
-        // Filter out any bad data (like null sizes from left join)
         parsedVariants = parsedVariants.filter(v => v.size !== null && v.size !== '');
 
-        // If empty, add one blank row so user can add data
         if (parsedVariants.length === 0) {
             parsedVariants.push({ size: '', price: 0, quantity: 0, original_price: 0 });
         }
@@ -101,10 +100,10 @@ export default function EditProductPage() {
             description: dbData.description || '',
             howToUse: dbData.howToUse || '',
             is_koko_enabled: (dbData.is_koko_enabled === 1 || dbData.is_koko_enabled === true),
-            variants: parsedVariants // reset() sets the form data
+            document: dbData.document || '',
+            variants: parsedVariants
         });
         
-        // FORCE UPDATE the list fields (Double insurance to make them show up)
         replace(parsedVariants);
 
         setIsDataLoaded(true);
@@ -130,11 +129,10 @@ export default function EditProductPage() {
       formData.append('brand', data.brand);
       formData.append('category', data.category);
       if (data.country) formData.append('country', data.country);
+      if (newDocument) formData.append('document', newDocument);
       if (data.description) formData.append('description', data.description);
       if (data.howToUse) formData.append('howToUse', data.howToUse);
       formData.append('is_koko_enabled', data.is_koko_enabled ? 'true' : 'false');
-      
-      // Send variants as JSON string
       formData.append('variants', JSON.stringify(data.variants));
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, {
@@ -215,15 +213,16 @@ export default function EditProductPage() {
                 <label className="block text-sm font-semibold text-stone-600 mb-2">Description</label>
                 <textarea {...register("description")} rows={4} className="w-full p-3 border border-stone-300 rounded-lg outline-none" />
             </div>
+
             <div>
-  <label className="block text-sm font-semibold text-stone-600 mb-2">How to Use</label>
-  <textarea 
-    {...register("howToUse")} 
-    rows={5} 
-    className="w-full p-3 border border-stone-300 rounded-lg outline-none"
-    placeholder="How should the customer use this product..."
-  />
-</div>
+                <label className="block text-sm font-semibold text-stone-600 mb-2">How to Use</label>
+                <textarea 
+                    {...register("howToUse")} 
+                    rows={5} 
+                    className="w-full p-3 border border-stone-300 rounded-lg outline-none"
+                    placeholder="How should the customer use this product..."
+                />
+            </div>
         </div>
 
         {/* VARIANTS SECTION */}
@@ -245,31 +244,26 @@ export default function EditProductPage() {
              {fields.map((field, index) => (
                <div key={field.id} className="grid grid-cols-12 gap-4 items-start p-4 bg-stone-50 border border-stone-200 rounded-xl relative group">
                   
-                  {/* Size */}
                   <div className="col-span-3">
                     <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Size</label>
                     <input {...register(`variants.${index}.size`, { required: true })} className="w-full p-2 border border-stone-300 rounded text-sm" />
                   </div>
 
-                  {/* Price */}
                   <div className="col-span-3">
                     <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Price</label>
                     <input type="number" step="0.01" {...register(`variants.${index}.price`, { required: true })} className="w-full p-2 border border-stone-300 rounded text-sm" />
                   </div>
 
-                  {/* Original Price */}
                   <div className="col-span-3">
                     <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Org. Price</label>
                     <input type="number" step="0.01" {...register(`variants.${index}.original_price`)} className="w-full p-2 border border-stone-300 rounded text-sm" />
                   </div>
 
-                  {/* Stock */}
                   <div className="col-span-2">
                     <label className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">Stock</label>
                     <input type="number" {...register(`variants.${index}.quantity`, { required: true })} className="w-full p-2 border border-stone-300 rounded text-sm" />
                   </div>
 
-                  {/* Delete */}
                   <div className="col-span-1 flex justify-center pt-6">
                     {fields.length > 1 && (
                         <button type="button" onClick={() => remove(index)} className="text-stone-400 hover:text-red-500 transition-colors p-1">
@@ -280,6 +274,56 @@ export default function EditProductPage() {
                </div>
              ))}
            </div>
+        </div>
+
+        {/* DOCUMENT SECTION */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 space-y-4">
+          <h2 className="font-bold text-lg text-[#000000] border-b pb-2">
+            Product Document <span className="text-stone-400 font-normal text-sm">(Optional)</span>
+          </h2>
+
+          {/* Show existing document if present */}
+          {watch("document") && (
+            <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg border border-stone-200">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <a  
+                href={`${process.env.NEXT_PUBLIC_API_URL}${watch("document")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 underline truncate"
+              >
+                View current document
+              </a>
+            </div>
+          )}
+
+          <div className="border-2 border-dashed border-stone-300 rounded-xl p-6 text-center hover:bg-stone-50 transition-colors">
+            <input
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              id="doc-upload"
+              onChange={(e) => {
+                if (e.target.files?.[0]) setNewDocument(e.target.files[0]);
+              }}
+            />
+            <label htmlFor="doc-upload" className="cursor-pointer flex flex-col items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <span className="text-sm text-stone-600 font-medium">
+                {watch("document") ? 'Replace document (PDF)' : 'Upload PDF document'}
+              </span>
+            </label>
+          </div>
+
+          {newDocument && (
+            <p className="text-sm text-green-600 flex items-center gap-1">
+              <Save size={13} /> New file selected: {newDocument.name}
+            </p>
+          )}
         </div>
 
         {/* SETTINGS */}
