@@ -10,6 +10,7 @@ interface OrderItem {
   size: string;
   price: number;
   quantity: number;
+  product_id?: string; // ← added
 }
 
 interface Order {
@@ -41,7 +42,7 @@ function OrderSuccessContent() {
   const [order, setOrder]           = useState<Order | null>(null);
   const [shippingFromSettings, setShippingFromSettings] = useState<number | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const [autoDownloaded, setAutoDownloaded] = useState(false); // ← NEW
+  const [autoDownloaded, setAutoDownloaded] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), 50);
@@ -82,7 +83,7 @@ function OrderSuccessContent() {
     fetchAll();
   }, [orderId]);
 
-  // ── AUTO-DOWNLOAD once data is ready ─────────────────────────────── ← NEW
+  // Auto-download receipt once data is ready
   useEffect(() => {
     if (!dataLoading && !autoDownloaded && orderId) {
       setAutoDownloaded(true);
@@ -90,7 +91,58 @@ function OrderSuccessContent() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataLoading]);
-  // ────────────────────────────────────────────────────────────────────
+
+  // ── Auto-download product documents ──────────────────────────────────
+  useEffect(() => {
+    if (!order || dataLoading) return;
+
+    const downloadProductDocs = async () => {
+      try {
+        // Get unique product IDs (1 doc per unique product, regardless of qty)
+        const uniqueProductIds = [
+          ...new Set(
+            order.items
+              .map((item) => item.product_id)
+              .filter(Boolean)
+          )
+        ] as string[];
+
+        if (uniqueProductIds.length === 0) return;
+
+        // Fetch each product in parallel
+        const productResponses = await Promise.all(
+          uniqueProductIds.map((pid) =>
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${pid}`)
+              .then((r) => (r.ok ? r.json() : null))
+              .catch(() => null)
+          )
+        );
+
+        // Filter only products that have a document
+        const docsToDownload = productResponses.filter((p) => p && p.document);
+
+        if (docsToDownload.length === 0) return;
+
+        // Stagger downloads 800ms apart so browser doesn't block them
+        docsToDownload.forEach((product, index) => {
+          setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = `${process.env.NEXT_PUBLIC_API_URL}${product.document}`;
+            link.download = `${product.name.replace(/[^a-zA-Z0-9]/g, '_')}_Guide.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }, index * 800);
+        });
+
+      } catch (err) {
+        console.error('Product document download failed:', err);
+      }
+    };
+
+    downloadProductDocs();
+  }, [order, dataLoading]);
+  // ─────────────────────────────────────────────────────────────────────
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shortId);
