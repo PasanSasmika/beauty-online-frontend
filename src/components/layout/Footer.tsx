@@ -70,7 +70,7 @@ export default function Footer() {
                 </div>
                 <div className="text-stone-600 space-y-1">
                     <p className="flex items-center justify-center gap-2 text-[#000000] font-medium">
-                       +94 71 953 3118
+                       +94 78 908 6776
                     </p>
                 </div>
             </div>
