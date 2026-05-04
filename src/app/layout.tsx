@@ -10,6 +10,7 @@ import Preloader from "@/components/ui/Prloader";
 import { CartProvider } from "@/context/CartContext";
 import CartSidebar from "@/components/cart/CartSidebar";
 import { AuthProvider } from "@/context/AuthContext";
+import FloatingPhone from "@/components/ui/FloatingPhone";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
             <CartSidebar />
             {!isAdmin && <Preloader />}  {/* ← hide on admin */}
             {!isAdmin && <Header />}     {/* ← hide on admin */}
+            {!isAdmin && <FloatingPhone />}
             {children}
           </CartProvider>
         </AuthProvider>
