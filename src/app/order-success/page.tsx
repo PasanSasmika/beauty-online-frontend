@@ -41,6 +41,7 @@ function OrderSuccessContent() {
   const [order, setOrder]           = useState<Order | null>(null);
   const [shippingFromSettings, setShippingFromSettings] = useState<number | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+  const [autoDownloaded, setAutoDownloaded] = useState(false); // ← NEW
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), 50);
@@ -60,13 +61,13 @@ function OrderSuccessContent() {
 
         if (orderRes.ok) {
           const orderData = await orderRes.json();
-          console.log('Order data:', orderData); // debug
+          console.log('Order data:', orderData);
           setOrder(orderData);
         }
 
         if (settingsRes.ok) {
           const settingsData = await settingsRes.json();
-          console.log('Settings data:', settingsData); // debug
+          console.log('Settings data:', settingsData);
           setShippingFromSettings(
             settingsData.shipping_cost ?? settingsData.shippingCost ?? null
           );
@@ -80,6 +81,16 @@ function OrderSuccessContent() {
 
     fetchAll();
   }, [orderId]);
+
+  // ── AUTO-DOWNLOAD once data is ready ─────────────────────────────── ← NEW
+  useEffect(() => {
+    if (!dataLoading && !autoDownloaded && orderId) {
+      setAutoDownloaded(true);
+      handleDownloadReceipt();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataLoading]);
+  // ────────────────────────────────────────────────────────────────────
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shortId);
@@ -102,13 +113,11 @@ function OrderSuccessContent() {
       const customer   = order?.customer;
       const items      = order?.items || [];
 
-      // Shipping: prefer order.shipping_cost, fallback to settings, then 0
       const shippingCost: number =
         (order?.shipping_cost && order.shipping_cost > 0)
           ? order.shipping_cost
           : (shippingFromSettings ?? 0);
 
-      // Total: prefer order.total_amount, fallback to items sum + shipping
       const itemsTotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
       const totalAmount: number =
         (order?.total_amount && order.total_amount > 0)
@@ -228,7 +237,6 @@ function OrderSuccessContent() {
         doc.setTextColor(140, 130, 120);
         doc.text('ORDER ITEMS', margin, y); y += 6;
 
-        // Table header
         doc.setFillColor(245, 244, 241);
         doc.rect(margin, y - 1, col, 8, 'F');
         doc.setFont('helvetica', 'bold');
@@ -245,7 +253,6 @@ function OrderSuccessContent() {
           doc.setFontSize(9);
           doc.setTextColor(40, 36, 30);
 
-          // Truncate long names
           let name = item.name;
           while (doc.getTextWidth(name + '...') > 80 && name.length > 0) name = name.slice(0, -1);
           if (name !== item.name) name += '...';
