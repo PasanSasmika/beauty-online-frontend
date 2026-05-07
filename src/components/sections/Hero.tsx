@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Search, Sparkles, Star, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Search, Sparkles, Star, ShieldCheck, X, Tag, Gift } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -13,23 +13,23 @@ interface Banner {
   isVisible: boolean;
 }
 
+type Phase = 'hidden' | 'visible' | 'leaving';
+
 export default function Hero() {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
   const [banners, setBanners] = useState<Banner[]>([]);
-
-  // Two-slot system — A and B swap roles each cycle
-  const [slotA, setSlotA] = useState<{ banner: Banner | null; phase: 'idle' | 'in' | 'out' }>({ banner: null, phase: 'idle' });
-  const [slotB, setSlotB] = useState<{ banner: Banner | null; phase: 'idle' | 'in' | 'out' }>({ banner: null, phase: 'idle' });
-  const [topSlot, setTopSlot] = useState<'A' | 'B'>('A');
+  const [currentBanner, setCurrentBanner] = useState<Banner | null>(null);
+  const [phase, setPhase] = useState<Phase>('hidden');
   const [dotIndex, setDotIndex] = useState(0);
 
-  const bannersRef = useRef<Banner[]>([]);
-  const idxRef = useRef(0);
-  const activeRef = useRef<'A' | 'B'>('A');
-  const busyRef = useRef(false);
-  const timers = useRef<NodeJS.Timeout[]>([]);
+  const bannersRef    = useRef<Banner[]>([]);
+  const idxRef        = useRef(0);
+  const busyRef       = useRef(false);
+  const timers        = useRef<NodeJS.Timeout[]>([]);
+  // ── NEW: track banners the user explicitly closed ──
+  const dismissedIds  = useRef<Set<string>>(new Set());
 
   const after = (ms: number, fn: () => void) => {
     const t = setTimeout(fn, ms);
@@ -41,7 +41,6 @@ export default function Hero() {
     timers.current = [];
   };
 
-  // Preload all images so they're in browser cache before sliding in
   const preloadImages = (list: Banner[]) => {
     list.forEach(b => {
       const img = new window.Image();
@@ -67,60 +66,79 @@ export default function Hero() {
     return () => clearAll();
   }, []);
 
-  const setSlot = useCallback((name: 'A' | 'B', patch: Partial<typeof slotA>) => {
-    if (name === 'A') setSlotA(s => ({ ...s, ...patch }));
-    else setSlotB(s => ({ ...s, ...patch }));
+  // ── Auto-dismiss (timer expired) — banner can show again next cycle ──
+  const dismiss = useCallback(() => {
+    clearAll();
+    setPhase('leaving');
+    after(460, () => {
+      setPhase('hidden');
+      busyRef.current = false;
+      const list = bannersRef.current;
+      if (list.length > 1) {
+        const nextIdx = (idxRef.current + 1) % list.length;
+        idxRef.current = nextIdx;
+        after(1200, runCycle);
+      }
+    });
+  }, []);
+
+  // ── Manual dismiss (X button) — marks banner so it never shows again ──
+  const dismissForever = useCallback(() => {
+    const banner = bannersRef.current[idxRef.current];
+    if (banner) dismissedIds.current.add(banner._id);
+
+    clearAll();
+    setPhase('leaving');
+    after(460, () => {
+      setPhase('hidden');
+      busyRef.current = false;
+
+      // Find the next banner that hasn't been permanently dismissed
+      const list = bannersRef.current;
+      const remaining = list.filter(b => !dismissedIds.current.has(b._id));
+      if (remaining.length === 0) return; // all dismissed — stop cycling
+
+      const nextIdx = (idxRef.current + 1) % list.length;
+      idxRef.current = nextIdx;
+      after(1200, runCycle);
+    });
   }, []);
 
   const runCycle = useCallback(() => {
     const list = bannersRef.current;
     if (list.length === 0 || busyRef.current) return;
+
+    // Walk forward until we find a banner not permanently dismissed
+    let checked = 0;
+    while (
+      dismissedIds.current.has(list[idxRef.current]._id) &&
+      checked < list.length
+    ) {
+      idxRef.current = (idxRef.current + 1) % list.length;
+      checked++;
+    }
+
+    // All banners dismissed — nothing left to show
+    if (checked === list.length) return;
+
     busyRef.current = true;
+    const idx = idxRef.current;
+    setCurrentBanner(list[idx]);
+    setDotIndex(idx);
 
-    const current = activeRef.current;           // slot currently active
-    const incoming = current === 'A' ? 'B' : 'A'; // slot that will slide in next
-    const nextIdx = (idxRef.current + 1) % list.length;
-
-    // Paint the next banner into the incoming slot BEFORE animating
-    setSlot(incoming, { banner: list[nextIdx], phase: 'idle' });
-
-    // One rAF so the browser renders the reset position first
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-
-        // Slide current banner IN (it was pre-set to idle/below)
-        setSlot(current, { banner: list[idxRef.current], phase: 'in' });
-        setTopSlot(current);
-        setDotIndex(idxRef.current);
-
-        // After 3.5s visible → slide out
-        after(3500, () => {
-          setSlot(current, { phase: 'out' });
-          setTopSlot(incoming); // bring incoming behind so it's ready
-
-          // After slide-out finishes → reset, switch active, wait 1s
-          after(520, () => {
-            setSlot(current, { phase: 'idle' });
-            activeRef.current = incoming;
-            idxRef.current = nextIdx;
-            busyRef.current = false;
-
-            after(1000, runCycle);
-          });
-        });
+    after(100, () => {
+      setPhase('visible');
+      after(6000, () => {
+        dismiss();
       });
     });
-  }, [setSlot]);
+  }, [dismiss]);
 
   useEffect(() => {
     if (banners.length === 0) return;
-    // Pre-load slot A with first banner
-    setSlotA({ banner: banners[0], phase: 'idle' });
-    // Pre-load slot B with second (if exists) so it's cached in DOM
-    if (banners.length > 1) setSlotB({ banner: banners[1], phase: 'idle' });
-    after(800, runCycle);
+    after(1500, runCycle);
     return () => clearAll();
-  }, [banners.length]);
+  }, [banners.length, runCycle]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,55 +149,29 @@ export default function Hero() {
     }
   };
 
-  // Translate phase → Tailwind transform + transition
-  const phaseClass = (phase: 'idle' | 'in' | 'out') => {
-    if (phase === 'in')  return 'translate-y-0    transition-transform duration-[620ms] ease-[cubic-bezier(0.34,1.15,0.64,1)]';
-    if (phase === 'out') return '-translate-y-full transition-transform duration-[500ms] ease-[cubic-bezier(0.76,0,0.24,1)]';
-    return 'translate-y-full'; // idle = parked below, no transition so it snaps silently
-  };
-
-  const renderSlot = (slot: typeof slotA, name: 'A' | 'B') => {
-    if (!slot.banner) return null;
-    return (
-      <div
-        key={name}
-        className={`absolute inset-0 z-20 rounded-[30px] overflow-hidden shadow-2xl will-change-transform ${phaseClass(slot.phase)}`}
-        style={{ zIndex: topSlot === name ? 22 : 21 }}
-      >
-        <Image
-          src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${slot.banner.image}`}
-          alt={slot.banner.description || 'Banner'}
-          fill
-          className="object-cover"
-          unoptimized
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-
-        {slot.banner.description && (
-  <div className="absolute bottom-5 left-5 right-5 z-10">
-    <div className="inline-flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-2.5 max-w-full">
-      <p className="text-white text-sm font-semibold leading-snug">
-        {slot.banner.description}
-      </p>
-    </div>
-  </div>
-)}
-
-        {banners.length > 1 && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-            {banners.map((_, i) => (
-              <span
-                key={i}
-                className={`block rounded-full transition-all duration-300 ${
-                  i === dotIndex ? 'w-5 h-[5px] bg-white' : 'w-[5px] h-[5px] bg-white/50'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
+  const popupStyle = (): React.CSSProperties => {
+    if (phase === 'hidden') {
+      return {
+        transform: 'translate(-50%, -40%) scale(0.95)',
+        opacity: 0,
+        transition: 'none',
+        pointerEvents: 'none',
+      };
+    }
+    if (phase === 'visible') {
+      return {
+        transform: 'translate(-50%, -50%) scale(1)',
+        opacity: 1,
+        transition: 'transform 600ms cubic-bezier(0.34, 1.3, 0.64, 1), opacity 400ms ease-out',
+        pointerEvents: 'auto',
+      };
+    }
+    return {
+      transform: 'translate(-50%, -40%) scale(0.95)',
+      opacity: 0,
+      transition: 'transform 450ms cubic-bezier(0.55, 0, 1, 0.45), opacity 300ms ease-in',
+      pointerEvents: 'none',
+    };
   };
 
   return (
@@ -241,7 +233,7 @@ export default function Hero() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2">
             <div className="flex items-center gap-1.5">
               <div className="flex text-yellow-400">
-                {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+                {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="currentColor" />)}
               </div>
               <span className="text-sm text-stone-500 font-medium">4.9 · 2,400+ reviews</span>
             </div>
@@ -253,25 +245,94 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* ── Right: hero always visible, banners slide over it ── */}
+        {/* ── Right: pure static image, zero animation ── */}
         <div className="lg:col-span-5 relative mt-12 lg:mt-0">
-<div className="relative w-full max-w-md mx-auto h-[450px] md:h-[550px] overflow-hidden rounded-[30px]">
-
+          <div className="relative w-full max-w-md mx-auto h-[450px] md:h-[550px] rounded-[30px]">
             <div className="absolute inset-0 bg-[#EBE5D9] rounded-[30px] rotate-6 scale-[1.03] origin-bottom-right z-0 shadow-lg" />
-
-            {/* Hero image — always the base */}
             <div className="relative w-full h-full rounded-[30px] overflow-hidden shadow-2xl z-10">
               <Image src="/image.jpg" alt="Radiant skin" fill className="object-cover" priority />
             </div>
-
-            {/* Two banner slots — swap each cycle */}
-            {renderSlot(slotA, 'A')}
-            {renderSlot(slotB, 'B')}
-
           </div>
         </div>
 
       </div>
+
+      {phase !== 'hidden' && (
+        <div
+          className="absolute inset-0 bg-white/20 backdrop-blur-[2px] z-40 transition-opacity duration-500"
+          style={{ opacity: phase === 'visible' ? 1 : 0 }}
+        />
+      )}
+
+      {currentBanner && (
+        <div
+          className="absolute top-1/2 left-1/2 z-50 w-[96vw] max-w-5xl will-change-transform shadow-[0_30px_60px_-15px_rgba(238,63,92,0.3)] rounded-2xl md:rounded-[32px] bg-white overflow-hidden border border-stone-100"
+          style={popupStyle()}
+        >
+          <div className="flex flex-col md:flex-row h-full w-full relative">
+
+            <div className="absolute inset-3 md:inset-4 border-2 border-dashed border-[#ee3f5c]/30 rounded-xl md:rounded-[20px] pointer-events-none z-20" />
+
+            <div className="relative w-full md:w-5/12 h-56 md:h-72 lg:h-80 flex-shrink-0 bg-stone-100 z-10">
+              <Image
+                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${currentBanner.image}`}
+                alt={currentBanner.description || 'Promotional Offer'}
+                fill
+                className="object-cover"
+                unoptimized
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-transparent to-white/90 md:to-white pointer-events-none" />
+              <div className="absolute top-6 left-6 bg-[#ee3f5c] text-white text-[10px] md:text-xs font-black uppercase tracking-widest px-4 py-2 rounded-md shadow-xl transform -rotate-3 flex items-center gap-1.5 z-30">
+                <Tag size={14} /> Flash Offer
+              </div>
+            </div>
+
+            <div className="relative w-full md:w-7/12 p-8 md:p-10 lg:p-12 flex flex-col justify-center bg-white z-10">
+              <div className="flex items-center gap-2 mb-3 text-[#ee3f5c]">
+                <Gift size={18} className="animate-pulse" />
+                <span className="text-sm font-black uppercase tracking-widest">Special Promotion</span>
+              </div>
+
+              {currentBanner.description && (
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-900 leading-[1.1] mb-6 md:mb-8 line-clamp-3 tracking-tight">
+                  {currentBanner.description}
+                </h3>
+              )}
+
+              <div className="mt-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <Link href="/products" onClick={dismiss} className="w-full sm:w-auto">
+                  <button className="group w-full sm:w-auto flex items-center justify-center gap-2 bg-[#ee3f5c] hover:bg-[#c1023e] text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(238,63,92,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(238,63,92,0.6)] hover:-translate-y-0.5 text-base sm:text-lg">
+                    Shop The Offer <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                  </button>
+                </Link>
+
+                {banners.length > 1 && (
+                  <div className="flex justify-center gap-2 pr-2">
+                    {banners.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`block rounded-full transition-all duration-500 ${
+                          i === dotIndex ? 'w-8 h-2 bg-[#ee3f5c]' : 'w-2 h-2 bg-stone-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* X button now calls dismissForever instead of dismiss */}
+          <button
+            onClick={dismissForever}
+            className="absolute top-6 right-6 bg-white/80 backdrop-blur-sm hover:bg-stone-100 text-stone-500 hover:text-stone-900 rounded-full p-2 transition-colors shadow-sm z-30 border border-stone-200"
+            aria-label="Close offer"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
 
       <div className="absolute bottom-10 left-0 w-full h-[1px] bg-stone-200 hidden md:block" />
     </section>
