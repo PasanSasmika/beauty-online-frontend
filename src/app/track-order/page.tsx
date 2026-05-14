@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Package, Search, MapPin, CheckCircle2, Clock, Truck, Box, XCircle, ChevronDown, ChevronUp, Calendar, RotateCcw } from 'lucide-react';
 
@@ -50,7 +51,7 @@ function getStepIndex(status: string) {
 // --- TIMELINE COMPONENT ---
 function OrderTimeline({ status }: { status: string }) {
   const isCancelled = status === 'cancelled';
-  const isReturned  = status === 'returned';   // ← fixed: outside JSX
+  const isReturned  = status === 'returned';
   const activeIdx   = isCancelled ? -1 : getStepIndex(status);
 
   return (
@@ -142,7 +143,7 @@ function OrderCard({ order }: { order: Order }) {
                 order.order_status === 'shipped'    ? 'bg-purple-100 text-purple-700' :
                 order.order_status === 'processing' ? 'bg-blue-100 text-blue-700'     :
                 order.order_status === 'cancelled'  ? 'bg-red-100 text-red-700'       :
-                order.order_status === 'returned'   ? 'bg-orange-100 text-orange-700' : // ← added
+                order.order_status === 'returned'   ? 'bg-orange-100 text-orange-700' :
                 'bg-yellow-100 text-yellow-700'
               }`}>
                 {order.order_status}
@@ -267,9 +268,12 @@ function GuestLookup({ onResult }: { onResult: (order: Order | null) => void }) 
   );
 }
 
-// --- MAIN PAGE ---
-export default function TrackOrderPage() {
+// --- MAIN CONTENT (needs useSearchParams → must be inside Suspense) ---
+function TrackOrderContent() {
   const { user, token } = useAuth();
+  const searchParams = useSearchParams();
+  const urlOrderId   = searchParams.get('orderId');
+
   const [orders, setOrders]               = useState<Order[]>([]);
   const [loading, setLoading]             = useState(false);
   const [guestOrder, setGuestOrder]       = useState<Order | null>(null);
@@ -286,6 +290,26 @@ export default function TrackOrderPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [token]);
+
+  // Auto-search when arriving from the email tracking link
+  useEffect(() => {
+    if (user || !urlOrderId) return;
+    const autoTrack = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/orders/track?orderId=${urlOrderId.trim()}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setGuestOrder(data);
+        }
+        setGuestSearched(true);
+      } catch {
+        setGuestSearched(true);
+      }
+    };
+    autoTrack();
+  }, [urlOrderId, user]);
 
   const handleGuestResult = (order: Order | null) => {
     setGuestOrder(order);
@@ -341,5 +365,14 @@ export default function TrackOrderPage() {
 
       </div>
     </div>
+  );
+}
+
+// --- PAGE EXPORT wrapped in Suspense (required for useSearchParams) ---
+export default function TrackOrderPage() {
+  return (
+    <Suspense>
+      <TrackOrderContent />
+    </Suspense>
   );
 }
